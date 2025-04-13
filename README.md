@@ -12,13 +12,13 @@
 
 ## API Endpoints
 ### Authorisation 
-POST /v1/auth/signup – Create account
-POST /v1/auth/login – Login and get JWT
-POST /v1/auth/logout – Log out
+* POST /v1/auth/signup – Create account
+* POST /v1/auth/login – Login and get JWT
+* POST /v1/auth/logout – Log out
 
 ### Exercises
-GET /v1/exercises – List all exercises
-GET /v1/exercises/{exercise_id} – Get a single exercise
+* GET /v1/exercises – List all exercises
+* GET /v1/exercises/{exercise_id} – Get a single exercise
 
 ### Workout Plans and Workout Plan Exercises
 * POST /v1/workout-plans – Create a workout plan with linked workout plan exercises
