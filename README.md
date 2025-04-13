@@ -38,4 +38,3 @@
 ### Workout Reports
 * GET /v1/reports/workout-sessions - List workout sessions with session exercises
 * GET /v1/reports/workout-sessions/{session_exercise_id} – Report on user’s progress on a specific exercise
-
