@@ -1,10 +1,11 @@
+import os
 from flask import Flask
 from flask_migrate import Migrate
-from models import db
 from dotenv import load_dotenv
-import os
+from models import db
+from views import api_bp
 
-load_dotenv()  # Load from .env
+load_dotenv()
 
 
 def create_app():
@@ -14,12 +15,20 @@ def create_app():
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = (
         os.getenv("SQLALCHEMY_TRACK_MODIFICATIONS", "False") == "True"
     )
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
     db.init_app(app)
     migrate = Migrate(app, db)
 
+    app.register_blueprint(api_bp, url_prefix="/v1")
+
     @app.route("/")
     def index():
-        return "Workout Tracker API"
+        return "Workout Tracker API is running."
 
     return app
+
+
+if __name__ == "__main__":
+    app = create_app()
+    app.run(debug=True)
