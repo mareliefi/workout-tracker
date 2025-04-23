@@ -17,5 +17,8 @@ class WorkoutPlanExercise(db.Model):
     target_reps = db.Column(db.Integer)
     target_weight = db.Column(db.Float)
 
+    # Relationships
+    exercise = db.relationship("Exercise", backref="workout_plan_exercises")
+
     def __repr__(self):
         return f"<WorkoutPlanExercise {self.id}>"

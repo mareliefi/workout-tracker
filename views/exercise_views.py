@@ -6,7 +6,7 @@ from . import api_bp
 
 @api_bp.route("/exercises", methods=["GET"])
 @token_required
-def list_sessions(current_user):
+def list_exercises(current_user):
     exercises = db.session.query(Exercise).all()
     if not exercises:
         return jsonify({"message": "No exercises found"}), 404
