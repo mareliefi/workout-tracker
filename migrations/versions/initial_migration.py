@@ -60,9 +60,9 @@ def upgrade():
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("workout_plan_id", sa.Integer(), nullable=False),
         sa.Column("exercise_id", sa.Integer(), nullable=False),
-        sa.Column("target_sets", sa.Integer(), nullable=True),
-        sa.Column("target_reps", sa.Integer(), nullable=True),
-        sa.Column("target_weight", sa.Float(), nullable=True),
+        sa.Column("target_sets", sa.Integer(), nullable=True, server_default="1"),
+        sa.Column("target_reps", sa.Integer(), nullable=True, server_default="1"),
+        sa.Column("target_weight", sa.Float(), nullable=True, server_default="1.0"),
         sa.ForeignKeyConstraint(["exercise_id"], ["exercises.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(
             ["workout_plan_id"], ["workout_plans.id"], ondelete="CASCADE"

@@ -35,3 +35,12 @@ class WorkoutPlan(db.Model):
 
     def __repr__(self):
         return f"<WorkoutPlan {self.name}>"
+
+    def get_user_workout_plan(self, user_id, workout_plan_id=None):
+        query = db.session.query(self).filter(self.user_id == user_id)
+
+        if workout_plan_id is not None:
+            query = query.filter(self.id == workout_plan_id)
+            return query.one_or_none()
+        else:
+            return query.all()

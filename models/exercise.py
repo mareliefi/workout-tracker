@@ -20,3 +20,6 @@ class Exercise(db.Model):
 
     def __repr__(self):
         return f"<Exercise {self.name}>"
+
+    def get_by_id(self, id):
+        return db.session.query(self).filter(self.id == id).one_or_none()

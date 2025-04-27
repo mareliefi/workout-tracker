@@ -13,9 +13,9 @@ class WorkoutPlanExercise(db.Model):
     exercise_id = db.Column(
         db.Integer, db.ForeignKey("exercises.id", ondelete="CASCADE"), nullable=False
     )
-    target_sets = db.Column(db.Integer)
-    target_reps = db.Column(db.Integer)
-    target_weight = db.Column(db.Float)
+    target_sets = db.Column(db.Integer, default=1)
+    target_reps = db.Column(db.Integer, default=1)
+    target_weight = db.Column(db.Float, default=1.0)
 
     # Relationships
     exercise = db.relationship("Exercise", backref="workout_plan_exercises")
