@@ -1,5 +1,4 @@
-from sqlalchemy.exc import IntegrityError
-from . import db, WorkoutPlanExercise, WorkoutSession
+from . import db
 
 
 class SessionExercise(db.Model):
@@ -32,6 +31,8 @@ class SessionExercise(db.Model):
 
     def validate(self):
         """Validates that the exercise and workout session belong to the same workout plan."""
+        from . import WorkoutPlanExercise, WorkoutSession
+
         workout_exercise = (
             db.session.query(WorkoutPlanExercise)
             .filter(WorkoutPlanExercise.id == self.workout_plan_exercise_id)

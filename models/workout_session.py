@@ -1,4 +1,4 @@
-from . import db, WorkoutPlan
+from . import db
 
 
 class WorkoutSession(db.Model):
@@ -32,6 +32,8 @@ class WorkoutSession(db.Model):
     @classmethod
     def get_session_for_user_plan(cls, user_id, workout_plan_id, session_id):
         "Get workout session for specific workout plan and user."
+        from . import WorkoutPlan
+
         return (
             db.Session.query(cls)
             .join(WorkoutPlan, cls.workout_plan_id == WorkoutPlan.id)
