@@ -1,5 +1,6 @@
 from flask import jsonify, request
 from utils.authorisation import token_required
+from utils.validation_functions import validate_field
 from models import db, Exercise, WorkoutPlan, WorkoutPlanExercise
 from . import api_bp
 
@@ -9,7 +10,7 @@ from . import api_bp
 def list_workouts(current_user):
     workout_plans = WorkoutPlan.get_user_workout_plan(user_id=current_user.id)
     if not workout_plans:
-        return jsonify({"message": "No workout plans found for the user."}), 404
+        return jsonify({"message": "No workout plans found for the user."}), 200
 
     return jsonify(
         [
@@ -64,7 +65,7 @@ def delete_workout(current_user, workout_plan_id):
         db.session.delete(workout_plan)
         db.session.commit()
         return jsonify(
-            {"message": f"Workoutplan with id {workout_plan_id} succesfully deleted."}
+            {"message": f"Workout plan with id {workout_plan_id} succesfully deleted."}
         ), 200
     else:
         return jsonify(
@@ -76,6 +77,7 @@ def delete_workout(current_user, workout_plan_id):
 @token_required
 def update_workout_plan(current_user, workout_plan_id):
     data = request.get_json()
+    errors = {}
 
     workout_plan = WorkoutPlan.get_user_workout_plan(
         user_id=current_user.id, workout_plan_id=workout_plan_id
@@ -97,62 +99,33 @@ def update_workout_plan(current_user, workout_plan_id):
         }
 
         for exercise_data in data.get("exercises", []):
-            try:
-                exercise_id = int(exercise_data.get("exercise_id"))
-            except (ValueError, TypeError):
-                return jsonify(
-                    {
-                        "message": f"""Invalid exercise_id: {exercise_data.get("exercise_id")}.
-                        Must be an integer."""
-                    }
-                ), 400
+            for field, type in [
+                ("exercise_id", "int"),
+                ("target_sets", "int"),
+                ("target_reps", "int"),
+                ("target_weight", "float"),
+            ]:
+                error = validate_field(data, field, type)
+                if error:
+                    errors[field] = error
+            if errors:
+                return {"status": "error", "errors": errors}, 400
 
+            exercise_id = data.get("exercise_id")
             exercise = Exercise.get_by_id(exercise_id)
             if exercise is None:
                 return jsonify(
                     {"message": f"Exercise with id {exercise_id} does not exist."}
                 ), 400
 
-            try:
-                target_sets = exercise_data.get("target_sets")
-                target_reps = exercise_data.get("target_reps")
-                target_weight = exercise_data.get("target_weight")
-
-                if target_sets is not None:
-                    target_sets = int(target_sets)
-                if target_reps is not None:
-                    target_reps = int(target_reps)
-                if target_weight is not None:
-                    target_weight = float(target_weight)
-
-            except (ValueError, TypeError):
-                return jsonify(
-                    {
-                        "message": """All target sets and reps must be integers and weights
-                        must be floats."""
-                    }
-                ), 400
-
             if exercise_id in existing_exercises:
                 # Exercise already exists → update it
                 wp_ex = existing_exercises[exercise_id]
-                try:
-                    wp_ex.target_sets = exercise_data.get(
-                        "target_sets", wp_ex.target_sets
-                    )
-                    wp_ex.target_reps = exercise_data.get(
-                        "target_reps", wp_ex.target_reps
-                    )
-                    wp_ex.target_weight = exercise_data.get(
-                        "target_weight", wp_ex.target_weight
-                    )
-                except Exception:
-                    return jsonify(
-                        {
-                            "message": """All target sets and reps must be integers and weights
-                            must be floats."""
-                        }
-                    ), 400
+                wp_ex.target_sets = exercise_data.get("target_sets", wp_ex.target_sets)
+                wp_ex.target_reps = exercise_data.get("target_reps", wp_ex.target_reps)
+                wp_ex.target_weight = exercise_data.get(
+                    "target_weight", wp_ex.target_weight
+                )
             else:
                 # Exercise does not exist → create new one
                 new_wp_ex = WorkoutPlanExercise(
@@ -174,6 +147,7 @@ def update_workout_plan(current_user, workout_plan_id):
 @token_required
 def create_workout_plan(current_user):
     data = request.get_json()
+    errors = {}
 
     # Name must be provided
     if "name" in data:
@@ -185,50 +159,30 @@ def create_workout_plan(current_user):
     # Add exercises, if provided
     if "exercises" in data:
         for exercise_data in data.get("exercises", []):
-            # Exercise id must be an integer
-            try:
-                exercise_id = int(exercise_data.get("exercise_id"))
-            except (ValueError, TypeError):
-                return jsonify(
-                    {
-                        "message": f"""Invalid exercise_id: {exercise_data.get("exercise_id")}.
-                        Must be an integer."""
-                    }
-                ), 400
+            for field, type in [
+                ("exercise_id", "int"),
+                ("target_sets", "int"),
+                ("target_reps", "int"),
+                ("target_weight", "float"),
+            ]:
+                error = validate_field(data, field, type)
+                if error:
+                    errors[field] = error
+            if errors:
+                return {"status": "error", "errors": errors}, 400
 
-            # Exercise id must exist in Exercise table
+            exercise_id = data.get("exercise_id")
             exercise = Exercise.get_by_id(exercise_id)
             if exercise is None:
                 return jsonify(
                     {"message": f"Exercise with id {exercise_id} does not exist."}
                 ), 400
 
-            # Sets and reps must be int and weight must be float
-            try:
-                target_sets = exercise_data.get("target_sets")
-                target_reps = exercise_data.get("target_reps")
-                target_weight = exercise_data.get("target_weight")
-
-                if target_sets is not None:
-                    target_sets = int(target_sets)
-                if target_reps is not None:
-                    target_reps = int(target_reps)
-                if target_weight is not None:
-                    target_weight = float(target_weight)
-
-            except (ValueError, TypeError):
-                return jsonify(
-                    {
-                        "message": """All target sets and reps must be integers and weights
-                        must be floats."""
-                    }
-                ), 400
-
             new_wp_ex = WorkoutPlanExercise(
                 exercise_id=exercise_id,
-                target_sets=target_sets if target_sets is not None else 1,
-                target_reps=target_reps if target_reps is not None else 1,
-                target_weight=target_weight if target_weight is not None else 1.0,
+                target_sets=exercise_data.get("target_sets", 1),
+                target_reps=exercise_data.get("target_reps", 1),
+                target_weight=exercise_data.get("target_weight", 1.0),
             )
             workout_plan.workout_plan_exercises.append(new_wp_ex)
 

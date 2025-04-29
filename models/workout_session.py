@@ -1,4 +1,4 @@
-from . import db
+from . import db, WorkoutPlan
 
 
 class WorkoutSession(db.Model):
@@ -24,3 +24,21 @@ class WorkoutSession(db.Model):
 
     def __repr__(self):
         return f"<WorkoutSession {self.id}>"
+
+    def get_by_id(self, id):
+        "Get workout session by id."
+        return db.session.query(self).filter(self.id == id).one_or_none()
+
+    @classmethod
+    def get_session_for_user_plan(cls, user_id, workout_plan_id, session_id):
+        "Get workout session for specific workout plan and user."
+        return (
+            db.Session.query(cls)
+            .join(WorkoutPlan, cls.workout_plan_id == WorkoutPlan.id)
+            .filter(
+                cls.id == session_id,
+                cls.workout_plan_id == workout_plan_id,
+                WorkoutPlan.user_id == user_id,
+            )
+            .one_or_none()
+        )

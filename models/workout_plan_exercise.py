@@ -19,6 +19,17 @@ class WorkoutPlanExercise(db.Model):
 
     # Relationships
     exercise = db.relationship("Exercise", backref="workout_plan_exercises")
+    session_exercises = db.relationship(
+        "SessionExercise", back_populates="workout_plan_exercise"
+    )
 
     def __repr__(self):
         return f"<WorkoutPlanExercise {self.id}>"
+
+    def get_by_workout_id_exercise_id(self, id, workout_plan_id):
+        "Get a workout plan exercise by id and workout_plan_id."
+        return (
+            db.session.query(self)
+            .filter(self.id == id, self.workout_plan_id == workout_plan_id)
+            .one_or_none()
+        )

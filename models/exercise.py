@@ -22,4 +22,5 @@ class Exercise(db.Model):
         return f"<Exercise {self.name}>"
 
     def get_by_id(self, id):
+        "Get an exercise by id."
         return db.session.query(self).filter(self.id == id).one_or_none()

@@ -89,24 +89,20 @@ def upgrade():
         "session_exercises",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("workout_session_id", sa.Integer(), nullable=False),
-        sa.Column("exercise_id", sa.Integer(), nullable=False),
-        sa.Column("actual_sets", sa.Integer(), nullable=True),
-        sa.Column("actual_reps", sa.Integer(), nullable=True),
-        sa.Column("actual_weight", sa.Float(), nullable=True),
+        sa.Column("workout_plan_exercise_id", sa.Integer(), nullable=False),
+        sa.Column("actual_sets", sa.Integer(), nullable=True, server_default="1"),
+        sa.Column("actual_reps", sa.Integer(), nullable=True, server_default="1"),
+        sa.Column("actual_weight", sa.Float(), nullable=True, server_default="1.0"),
         sa.Column("notes", sa.Text(), nullable=True),
-        sa.ForeignKeyConstraint(["exercise_id"], ["exercises.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["workout_plan_exercise_id"],
+            ["workout_plan_exercises.id"],
+            ondelete="CASCADE",
+        ),
         sa.ForeignKeyConstraint(
             ["workout_session_id"], ["workout_sessions.id"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("id"),
-    )
-
-    # Add the constraint to verify exercise belongs to workout_plan
-    op.create_index(
-        "ix_session_exercise_plan_validation",
-        "session_exercises",
-        ["workout_session_id", "exercise_id"],
-        unique=False,
     )
 
 
