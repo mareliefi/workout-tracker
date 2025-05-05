@@ -7,9 +7,9 @@ Create Date: 2025-04-13 10:00:00.000000
 
 """
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic
 revision = "1a2b3c4d5e6f"
@@ -108,7 +108,6 @@ def upgrade():
 
 def downgrade():
     # Drop tables in reverse order to avoid foreign key constraint errors
-    op.drop_index("ix_session_exercise_plan_validation", table_name="session_exercises")
     op.drop_table("session_exercises")
     op.drop_table("workout_sessions")
     op.drop_table("workout_plan_exercises")
