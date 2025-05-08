@@ -1,9 +1,13 @@
+# app/__init__.py
+
 import os
+
+from dotenv import load_dotenv
 from flask import Flask
 from flask_migrate import Migrate
-from dotenv import load_dotenv
-from models import db
-from views import api_bp
+
+from app.models import db
+from app.views import api_bp
 
 load_dotenv()
 
@@ -18,7 +22,7 @@ def create_app():
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
     db.init_app(app)
-    migrate = Migrate(app, db)
+    Migrate(app, db)
 
     app.register_blueprint(api_bp, url_prefix="/v1")
 
@@ -27,8 +31,3 @@ def create_app():
         return "Workout Tracker API is running."
 
     return app
-
-
-if __name__ == "__main__":
-    app = create_app()
-    app.run(debug=True)

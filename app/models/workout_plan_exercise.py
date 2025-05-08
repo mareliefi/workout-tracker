@@ -18,9 +18,11 @@ class WorkoutPlanExercise(db.Model):
     target_weight = db.Column(db.Float, default=1.0)
 
     # Relationships
-    exercise = db.relationship("Exercise", backref="workout_plan_exercises")
+    exercise = db.relationship("Exercise", back_populates="workout_plan_exercises")
     session_exercises = db.relationship(
-        "SessionExercise", back_populates="workout_plan_exercise"
+        "SessionExercise",
+        back_populates="workout_plan_exercise",
+        cascade="all, delete-orphan",
     )
 
     def __repr__(self):

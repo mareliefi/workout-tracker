@@ -1,17 +1,21 @@
-from flask import jsonify, request
-from utils.authorisation import token_required
-from utils.validation_functions import validate_field
-from models import (
-    db,
+from app.models import (
     SessionExercise,
     WorkoutPlan,
     WorkoutPlanExercise,
     WorkoutSession,
+    db,
 )
+from app.utils.authorisation import token_required
+from app.utils.validation_functions import validate_field
+from flask import jsonify, request
+
 from . import api_bp
 
 
-@api_bp.route("/workout-sessions", methods=["GET"])
+@api_bp.route(
+    "/workout-sessions",
+    methods=["GET"],
+)
 @token_required
 def list_workout_sessions(current_user):
     workout_plans = WorkoutPlan.get_user_workout_plan(user_id=current_user.id)

@@ -3,15 +3,17 @@ import os
 import sys
 from logging.config import fileConfig
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from app import create_app
 from flask import current_app
 
 from alembic import context
-from flask import current_app
 
+# Create the app and push the context
 app = create_app()
 app.app_context().push()
+
 config = context.config
 
 fileConfig(config.config_file_name)

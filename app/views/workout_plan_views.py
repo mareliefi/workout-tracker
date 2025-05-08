@@ -1,7 +1,8 @@
+from app.models import Exercise, WorkoutPlan, WorkoutPlanExercise, db
+from app.utils.authorisation import token_required
+from app.utils.validation_functions import validate_field
 from flask import jsonify, request
-from utils.authorisation import token_required
-from utils.validation_functions import validate_field
-from models import db, Exercise, WorkoutPlan, WorkoutPlanExercise
+
 from . import api_bp
 
 

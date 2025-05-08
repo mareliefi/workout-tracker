@@ -1,8 +1,9 @@
 import datetime
+
 import jwt
+from app.models import User, db
 from flask import current_app, jsonify, request
 from werkzeug.security import check_password_hash, generate_password_hash
-from models import db, User
 from . import api_bp
 
 

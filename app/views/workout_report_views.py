@@ -1,12 +1,19 @@
+from app.models import (
+    SessionExercise,
+    WorkoutPlan,
+    WorkoutPlanExercise,
+    WorkoutSession,
+    db,
+)
+from app.utils.authorisation import token_required
 from sqlalchemy.orm import joinedload
-from utils.authorisation import token_required
-from models import db, SessionExercise, WorkoutPlan, WorkoutPlanExercise, WorkoutSession
+
 from . import api_bp
 
 
 @api_bp.route("/reports/workout-sessions/<int:workout_plan_id>", methods=["GET"])
 @token_required
-def get_workout_reports(current_user, workout_plan_id):
+def get_workout_report(current_user, workout_plan_id):
     workout_plan = (
         db.Session.query(WorkoutPlan)
         .options(

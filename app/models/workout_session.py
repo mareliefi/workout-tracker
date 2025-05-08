@@ -17,8 +17,7 @@ class WorkoutSession(db.Model):
     # Relationships
     session_exercises = db.relationship(
         "SessionExercise",
-        backref="workout_session",
-        lazy=True,
+        back_populates="workout_session",
         cascade="all, delete-orphan",
     )
 

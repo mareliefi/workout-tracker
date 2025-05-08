@@ -1,7 +1,8 @@
-import jwt
 from functools import wraps
-from flask import request, jsonify, current_app
-from models import db, User
+
+import jwt
+from app.models import User, db
+from flask import current_app, jsonify, request
 
 
 def token_required(f):

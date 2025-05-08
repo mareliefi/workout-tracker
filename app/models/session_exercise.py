@@ -21,9 +21,11 @@ class SessionExercise(db.Model):
     notes = db.Column(db.Text)
 
     # Relationships
-    workout_session = db.relationship("WorkoutSession", backref="session_exercises")
+    workout_session = db.relationship(
+        "WorkoutSession", back_populates="session_exercises"
+    )
     workout_plan_exercise = db.relationship(
-        "WorkoutPlanExercise", backref="session_exercises"
+        "WorkoutPlanExercise", back_populates="session_exercises"
     )
 
     def __repr__(self):

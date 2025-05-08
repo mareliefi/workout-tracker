@@ -12,10 +12,7 @@ class Exercise(db.Model):
 
     # Relationships
     workout_plan_exercises = db.relationship(
-        "WorkoutPlanExercise", backref="exercise", lazy=True
-    )
-    session_exercises = db.relationship(
-        "SessionExercise", backref="exercise", lazy=True
+        "WorkoutPlanExercise", back_populates="exercise"
     )
 
     def __repr__(self):
