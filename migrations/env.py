@@ -3,21 +3,27 @@ import os
 import sys
 from logging.config import fileConfig
 
+from alembic import context
+
+# Add your app directory to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from app import create_app
 from flask import current_app
 
-from alembic import context
-
-# Create the app and push the context
+# Initialize your app and push the app context
 app = create_app()
 app.app_context().push()
 
+# Get the Alembic Config object
 config = context.config
 
-fileConfig(config.config_file_name)
+# Configure logging only if config file is present
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
+
 logger = logging.getLogger("alembic.env")
+
 
 
 def get_engine():
