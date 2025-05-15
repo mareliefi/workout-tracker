@@ -1,7 +1,8 @@
+# app/utils/authorisation.py
 from functools import wraps
 
 import jwt
-from app.models import User, db
+from app.models import User, db  # Import db and User directly
 from flask import current_app, jsonify, request
 
 
