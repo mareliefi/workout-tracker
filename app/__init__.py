@@ -4,8 +4,8 @@ import os
 from dotenv import load_dotenv
 from flask import Flask
 from flask_migrate import Migrate
-from app.models import db
-from app.views import api_bp
+from .models import db
+#from .views import api_bp
 
 load_dotenv()
 
@@ -26,7 +26,7 @@ def create_app(config_class=None):
     db.init_app(app)
     Migrate(app, db)
 
-    app.register_blueprint(api_bp, url_prefix="/v1")
+    #app.register_blueprint(api_bp, url_prefix="/v1")
 
     @app.route("/")
     def index():
