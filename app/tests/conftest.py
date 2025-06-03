@@ -1,49 +1,51 @@
-from datetime import datetime, timedelta
-
 import pytest
 from app import create_app, db
-from app.models import (
-    Exercise,
-    SessionExercise,
-    User,
-    WorkoutPlan,
-    WorkoutPlanExercise,
-    WorkoutSession,
-)
-from config_test import TestConfig
+from ..config_test import TestConfig
+from sqlalchemy.orm import scoped_session, sessionmaker
 
-
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def app():
     app = create_app(config_class=TestConfig)
-    print("✅ App created in env.py")
-
     with app.app_context():
-        # Create all tables in the test database
         db.create_all()
-
-        yield app  # The app is yielded so it can be used in tests
-
-        # Cleanup: drop all tables after tests
-        db.session.remove()
+        yield app
         db.drop_all()
 
 
-# Client fixture to interact with the app
+@pytest.fixture(scope="function", autouse=True)
+def session(app):
+    connection = db.engine.connect()
+    transaction = connection.begin()
+
+    session_factory = sessionmaker(bind=connection)
+    scoped_sess = scoped_session(session_factory)
+
+    db.session = scoped_sess
+
+    yield scoped_sess
+
+    scoped_sess.remove()      # <-- this cleans up the session properly
+    transaction.rollback()
+    connection.close()
+
+
 @pytest.fixture
 def client(app):
     return app.test_client()
 
-
-# CLI runner fixture (for running custom CLI commands)
 @pytest.fixture
-def runner(app):
-    return app.test_cli_runner()
+def seed_data(session):
+    """Populate the database. Session is now per-test and rolls back."""
+    from datetime import datetime, timedelta
+    from app.models import (
+        Exercise,
+        SessionExercise,
+        User,
+        WorkoutPlan,
+        WorkoutPlanExercise,
+        WorkoutSession,
+    )
 
-
-@pytest.fixture
-def seed_data(app):
-    """Populates the test DB with complete sample data."""
     # Create user
     plan_user = User(
         name="Test",
@@ -51,8 +53,8 @@ def seed_data(app):
         email="test@example.com",
         password_hash="fakehashedpassword123",
     )
-    db.session.add(plan_user)
-    db.session.flush()
+    session.add(plan_user)
+    session.flush()
 
     no_plan_user = User(
         name="Test2",
@@ -60,13 +62,13 @@ def seed_data(app):
         email="test2@example.com",
         password_hash="fakehashedpassword1234",
     )
-    db.session.add(no_plan_user)
-    db.session.flush()
+    session.add(no_plan_user)
+    session.flush()
 
     # Create workout plan
     wp = WorkoutPlan(name="Full Body Plan", user_id=plan_user.id)
-    db.session.add(wp)
-    db.session.flush()
+    session.add(wp)
+    session.flush()
 
     # Create exercises
     exercise1 = Exercise(
@@ -81,8 +83,8 @@ def seed_data(app):
         category="Strength",
         muscle_group="Legs",
     )
-    db.session.add_all([exercise1, exercise2])
-    db.session.flush()
+    session.add_all([exercise1, exercise2])
+    session.flush()
 
     # Map exercises to plan
     wp_ex_1 = WorkoutPlanExercise(
@@ -99,22 +101,22 @@ def seed_data(app):
         target_reps=10,
         target_weight=0,
     )
-    db.session.add_all([wp_ex_1, wp_ex_2])
-    db.session.flush()
+    session.add_all([wp_ex_1, wp_ex_2])
+    session.flush()
 
     # Create a workout session
-    session = WorkoutSession(
+    session_obj = WorkoutSession(
         workout_plan_id=wp.id,
         scheduled_at=datetime.now() + timedelta(days=1),
         started_at=datetime.now(),
         completed_at=datetime.now() + timedelta(hours=1),
     )
-    db.session.add(session)
-    db.session.flush()
+    session.add(session_obj)
+    session.flush()
 
     # Add exercises to session
     sess_ex_1 = SessionExercise(
-        workout_session_id=session.id,
+        workout_session_id=session_obj.id,
         workout_plan_exercise_id=wp_ex_1.id,
         actual_sets=3,
         actual_reps=12,
@@ -122,15 +124,15 @@ def seed_data(app):
         notes="Felt strong",
     )
     sess_ex_2 = SessionExercise(
-        workout_session_id=session.id,
+        workout_session_id=session_obj.id,
         workout_plan_exercise_id=wp_ex_2.id,
         actual_sets=4,
         actual_reps=10,
         actual_weight=0,
         notes="Challenging but completed",
     )
-    db.session.add_all([sess_ex_1, sess_ex_2])
-    db.session.commit()
+    session.add_all([sess_ex_1, sess_ex_2])
+    session.commit()
 
     return {
         "plan_user": plan_user,
@@ -138,6 +140,8 @@ def seed_data(app):
         "workout_plan": wp,
         "exercises": [exercise1, exercise2],
         "plan_exercises": [wp_ex_1, wp_ex_2],
-        "workout_session": session,
+        "workout_session": session_obj,
         "session_exercises": [sess_ex_1, sess_ex_2],
     }
+
+
