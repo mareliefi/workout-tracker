@@ -5,10 +5,9 @@ from dotenv import load_dotenv
 from flask import Flask
 from flask_migrate import Migrate
 from .models import db
-#from .views import api_bp
+from .views import api_bp
 
 load_dotenv()
-
 
 def create_app(config_class=None):
     app = Flask(__name__)
@@ -26,11 +25,13 @@ def create_app(config_class=None):
     db.init_app(app)
     Migrate(app, db)
 
-    #app.register_blueprint(api_bp, url_prefix="/v1")
+    # Register the API blueprint with the prefix "/api"
+    app.register_blueprint(api_bp, url_prefix="/api")
 
     @app.route("/")
     def index():
         return "Workout Tracker API is running."
 
     return app
+
 

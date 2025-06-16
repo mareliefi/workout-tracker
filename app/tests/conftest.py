@@ -24,20 +24,16 @@ def session(app):
 
     yield scoped_sess
 
-    scoped_sess.remove()      # <-- this cleans up the session properly
+    scoped_sess.remove()   
     transaction.rollback()
     connection.close()
 
 
 @pytest.fixture
-def client(app):
-    return app.test_client()
-
-@pytest.fixture
 def seed_data(session):
     """Populate the database. Session is now per-test and rolls back."""
     from datetime import datetime, timedelta
-    from app.models import (
+    from ..models import (
         Exercise,
         SessionExercise,
         User,
@@ -46,7 +42,7 @@ def seed_data(session):
         WorkoutSession,
     )
 
-    # Create user
+    # Create users
     plan_user = User(
         name="Test",
         surname="User",
@@ -54,7 +50,6 @@ def seed_data(session):
         password_hash="fakehashedpassword123",
     )
     session.add(plan_user)
-    session.flush()
 
     no_plan_user = User(
         name="Test2",
@@ -134,14 +129,15 @@ def seed_data(session):
     session.add_all([sess_ex_1, sess_ex_2])
     session.commit()
 
+    # Re-fetch all data as session-bound
     return {
-        "plan_user": plan_user,
-        "no_plan_user": no_plan_user,
-        "workout_plan": wp,
-        "exercises": [exercise1, exercise2],
-        "plan_exercises": [wp_ex_1, wp_ex_2],
-        "workout_session": session_obj,
-        "session_exercises": [sess_ex_1, sess_ex_2],
+        "plan_user": session.query(User).filter_by(email="test@example.com").one(),
+        "no_plan_user": session.query(User).filter_by(email="test2@example.com").one(),
+        "workout_plan": session.query(WorkoutPlan).filter_by(user_id=plan_user.id).one(),
+        "exercises": session.query(Exercise).all(),
+        "plan_exercises": session.query(WorkoutPlanExercise).filter_by(workout_plan_id=wp.id).all(),
+        "workout_session": session.query(WorkoutSession).filter_by(workout_plan_id=wp.id).one(),
+        "session_exercises": session.query(SessionExercise).filter_by(workout_session_id=session_obj.id).all(),
     }
 
 

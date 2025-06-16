@@ -1,5 +1,5 @@
-from app.models import Exercise, db
-from app.utils.authorisation import token_required
+from ..models import Exercise, db
+from ..utils.authorisation import token_required
 from flask import jsonify
 
 from . import api_bp

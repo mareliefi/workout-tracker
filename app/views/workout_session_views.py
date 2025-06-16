@@ -1,12 +1,12 @@
-from app.models import (
+from ..models import (
     SessionExercise,
     WorkoutPlan,
     WorkoutPlanExercise,
     WorkoutSession,
     db,
 )
-from app.utils.authorisation import token_required
-from app.utils.validation_functions import validate_field
+from ..utils.authorisation import token_required
+from ..utils.validation_functions import validate_field
 from flask import jsonify, request
 
 from . import api_bp

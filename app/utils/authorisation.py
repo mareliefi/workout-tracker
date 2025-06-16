@@ -2,7 +2,7 @@
 from functools import wraps
 
 import jwt
-from app.models import User, db  # Import db and User directly
+from ..models import User, db 
 from flask import current_app, jsonify, request
 
 
@@ -10,7 +10,7 @@ def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = request.cookies.get("jwt_token")
-
+        print("Token", token)
         if not token:
             return jsonify({"message": "Token is missing!"}), 401
 

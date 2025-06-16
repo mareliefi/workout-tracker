@@ -2,10 +2,6 @@ import json
 from datetime import datetime, timedelta
 
 import jwt
-import pytest
-from app import create_app, db
-from app.models import Exercise, User
-from flask import current_app
 
 
 # Helper function to create a JWT token
@@ -20,21 +16,16 @@ def test_list_exercises(client, seed_data, app):
         plan_user = seed_data["plan_user"]
         exercises = seed_data["exercises"]
 
-        # Create token within app context
         token = create_jwt_token(plan_user.id, app)
 
-        # Make request with token in cookie
-        # Use the with_cookies context manager for Flask's test client
-        response = client.get(
-            "/api/exercises", environ_base={"HTTP_COOKIE": f"jwt_token={token}"}
-        )
+        client.set_cookie(key='jwt_token', value=token, domain='localhost')
+        response = client.get("/api/exercises")
 
         assert response.status_code == 200
         data = json.loads(response.data)
         assert isinstance(data, list)
         assert len(data) == len(exercises)
 
-        # Check fields
         assert "id" in data[0]
         assert "name" in data[0]
         assert "category" in data[0]
@@ -46,10 +37,9 @@ def test_get_exercise(client, seed_data, app):
         plan_user = seed_data["plan_user"]
         exercise = seed_data["exercises"][0]
 
-        # Create token within app context
         token = create_jwt_token(plan_user.id, app)
 
-        # Make request with token in cookie
+        client.set_cookie(key='jwt_token', value=token, domain='localhost')
         response = client.get(
             f"/api/exercises/{exercise.id}",
             environ_base={"HTTP_COOKIE": f"jwt_token={token}"},
@@ -67,12 +57,11 @@ def test_get_exercise_not_found(client, seed_data, app):
     with app.app_context():
         plan_user = seed_data["plan_user"]
 
-        # Create token within app context
         token = create_jwt_token(plan_user.id, app)
 
-        # Make request with token in cookie
+        client.set_cookie(key='jwt_token', value=token, domain='localhost')
         response = client.get(
-            "/api/exercises/999",  # Non-existent ID
+            "/api/exercises/999", 
             environ_base={"HTTP_COOKIE": f"jwt_token={token}"},
         )
 

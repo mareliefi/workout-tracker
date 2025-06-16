@@ -1,11 +1,11 @@
-from app.models import (
+from ..models import (
     SessionExercise,
     WorkoutPlan,
     WorkoutPlanExercise,
     WorkoutSession,
     db,
 )
-from app.utils.authorisation import token_required
+from ..utils.authorisation import token_required
 from sqlalchemy.orm import joinedload
 
 from . import api_bp
