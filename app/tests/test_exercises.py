@@ -1,14 +1,5 @@
 import json
-from datetime import datetime, timedelta
-
-import jwt
-
-
-# Helper function to create a JWT token
-def create_jwt_token(user_id, app):
-    payload = {"id": user_id, "exp": datetime.now() + timedelta(hours=1)}
-    return jwt.encode(payload, app.config["SECRET_KEY"], algorithm="HS256")
-
+from .test_utils import create_jwt_token
 
 def test_list_exercises(client, seed_data, app):
     """Test the list_exercises endpoint."""
