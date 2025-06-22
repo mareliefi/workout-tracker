@@ -18,6 +18,7 @@ class Exercise(db.Model):
     def __repr__(self):
         return f"<Exercise {self.name}>"
 
-    def get_by_id(self, id):
+    @classmethod
+    def get_by_id(cls, id):
         "Get an exercise by id."
-        return db.session.query(self).filter(self.id == id).one_or_none()
+        return db.session.query(cls).filter(cls.id == id).one_or_none()

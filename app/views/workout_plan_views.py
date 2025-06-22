@@ -1,8 +1,8 @@
+from flask import jsonify, request
+
 from ..models import Exercise, WorkoutPlan, WorkoutPlanExercise, db
 from ..utils.authorisation import token_required
 from ..utils.validation_functions import validate_field
-from flask import jsonify, request
-
 from . import api_bp
 
 
@@ -98,8 +98,8 @@ def update_workout_plan(current_user, workout_plan_id):
         existing_exercises = {
             wp_ex.exercise_id: wp_ex for wp_ex in workout_plan.workout_plan_exercises
         }
-
-        for exercise_data in data.get("exercises", []):
+        new_exercises = data.get("exercises", [])
+        for exercise_data in new_exercises:
             for field, type in [
                 ("exercise_id", "int"),
                 ("target_sets", "int"),
@@ -112,7 +112,7 @@ def update_workout_plan(current_user, workout_plan_id):
             if errors:
                 return {"status": "error", "errors": errors}, 400
 
-            exercise_id = data.get("exercise_id")
+            exercise_id = exercise_data.get("exercise_id")
             exercise = Exercise.get_by_id(exercise_id)
             if exercise is None:
                 return jsonify(
@@ -159,7 +159,8 @@ def create_workout_plan(current_user):
 
     # Add exercises, if provided
     if "exercises" in data:
-        for exercise_data in data.get("exercises", []):
+        exercises = data.get("exercises", [])
+        for exercise_data in exercises:
             for field, type in [
                 ("exercise_id", "int"),
                 ("target_sets", "int"),
@@ -172,7 +173,7 @@ def create_workout_plan(current_user):
             if errors:
                 return {"status": "error", "errors": errors}, 400
 
-            exercise_id = data.get("exercise_id")
+            exercise_id = exercise_data.get("exercise_id")
             exercise = Exercise.get_by_id(exercise_id)
             if exercise is None:
                 return jsonify(
@@ -193,5 +194,8 @@ def create_workout_plan(current_user):
         return jsonify({"message": "An error occurred while saving the data."}), 500
 
     return jsonify(
-        {"message": f"Workout plan added successfully with id {workout_plan.id}"}
+        {
+            "message": "Workout plan added successfully.",
+            "workout_plan_id": workout_plan.id,
+        }
     ), 200
