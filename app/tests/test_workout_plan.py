@@ -1,6 +1,6 @@
 import json
 
-from ..models import WorkoutPlan, WorkoutPlanExercise
+from ..models import WorkoutPlan
 from .test_utils import create_jwt_token
 
 
