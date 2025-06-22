@@ -1,5 +1,8 @@
 import json
+
+
 from .test_utils import create_jwt_token
+
 
 def test_list_exercises(client, seed_data, app):
     """Test the list_exercises endpoint."""
@@ -9,7 +12,7 @@ def test_list_exercises(client, seed_data, app):
 
         token = create_jwt_token(plan_user.id, app)
 
-        client.set_cookie(key='jwt_token', value=token, domain='localhost')
+        client.set_cookie(key="jwt_token", value=token, domain="localhost")
         response = client.get("/api/exercises")
 
         assert response.status_code == 200
@@ -30,7 +33,7 @@ def test_get_exercise(client, seed_data, app):
 
         token = create_jwt_token(plan_user.id, app)
 
-        client.set_cookie(key='jwt_token', value=token, domain='localhost')
+        client.set_cookie(key="jwt_token", value=token, domain="localhost")
         response = client.get(
             f"/api/exercises/{exercise.id}",
             environ_base={"HTTP_COOKIE": f"jwt_token={token}"},
@@ -50,9 +53,9 @@ def test_get_exercise_not_found(client, seed_data, app):
 
         token = create_jwt_token(plan_user.id, app)
 
-        client.set_cookie(key='jwt_token', value=token, domain='localhost')
+        client.set_cookie(key="jwt_token", value=token, domain="localhost")
         response = client.get(
-            "/api/exercises/999", 
+            "/api/exercises/999",
             environ_base={"HTTP_COOKIE": f"jwt_token={token}"},
         )
 
