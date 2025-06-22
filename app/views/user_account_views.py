@@ -1,9 +1,10 @@
 import datetime
 
 import jwt
-from ..models import User, db
 from flask import current_app, jsonify, request
 from werkzeug.security import check_password_hash, generate_password_hash
+
+from ..models import User, db
 from . import api_bp
 
 
@@ -13,21 +14,23 @@ def login():
     if not data or not data.get("email") or not data.get("password"):
         return jsonify({"message": "Email and password are required"}), 400
 
-    user = db.session.query(User).filter_by(username=data["email"]).one_or_none()
+    user = db.session.query(User).filter_by(email=data["email"]).one_or_none()
 
-    if not user or not check_password_hash(user.password, data["password"]):
+    if not user or not check_password_hash(user.password_hash, data["password"]):
         return jsonify({"message": "Invalid credentials"}), 401
 
     token = jwt.encode(
         {
             "id": user.id,
-            "expiry": datetime.datetime.now() + datetime.timedelta(hours=24),
+            "expiry": int(
+                (datetime.datetime.now() + datetime.timedelta(hours=24)).timestamp()
+            ),
         },
         current_app.config["SECRET_KEY"],
         algorithm="HS256",
     )
 
-    response = jsonify({"message": "Logged in successfully"}), 200
+    response = jsonify({"message": "Logged in successfully"})
     response.set_cookie("jwt_token", token, httponly=True, samesite="Lax")
 
     return response
@@ -55,8 +58,9 @@ def register():
 
     new_user = User(
         name=data.get("name"),
+        surname=data.get("surname"),
         email=data.get("email"),
-        password=generate_password_hash(data.get("password")),
+        password_hash=generate_password_hash(data.get("password")),
     )
 
     db.session.add(new_user)
@@ -69,8 +73,7 @@ def register():
 
 @api_bp.route("/auth/logout", methods=["POST"])
 def logout():
-    response = jsonify({"message": "Logged out successfully"}), 200
-
+    response = jsonify({"message": "Logged out successfully"})
     response.set_cookie("jwt_token", "", expires=0, httponly=True, samesite="Strict")
 
     return response
