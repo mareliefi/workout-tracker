@@ -34,7 +34,7 @@ class WorkoutSession(db.Model):
         from . import WorkoutPlan
 
         return (
-            db.Session.query(cls)
+            db.session.query(cls)
             .join(WorkoutPlan, cls.workout_plan_id == WorkoutPlan.id)
             .filter(
                 cls.id == session_id,

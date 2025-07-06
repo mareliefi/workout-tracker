@@ -1,7 +1,6 @@
 import json
 
-
-from .test_utils import create_jwt_token
+from .utils.test_utilities import create_jwt_token
 
 
 def test_list_exercises(client, seed_data, app):

@@ -28,10 +28,11 @@ class WorkoutPlanExercise(db.Model):
     def __repr__(self):
         return f"<WorkoutPlanExercise {self.id}>"
 
-    def get_by_workout_id_exercise_id(self, id, workout_plan_id):
+    @classmethod
+    def get_by_workout_id_exercise_id(cls, id, workout_plan_id):
         "Get a workout plan exercise by id and workout_plan_id."
         return (
-            db.session.query(self)
-            .filter(self.id == id, self.workout_plan_id == workout_plan_id)
+            db.session.query(cls)
+            .filter(cls.id == id, cls.workout_plan_id == workout_plan_id)
             .one_or_none()
         )

@@ -1,3 +1,5 @@
+from flask import jsonify, request
+
 from ..models import (
     SessionExercise,
     WorkoutPlan,
@@ -7,8 +9,6 @@ from ..models import (
 )
 from ..utils.authorisation import token_required
 from ..utils.validation_functions import validate_field
-from flask import jsonify, request
-
 from . import api_bp
 
 
@@ -21,7 +21,14 @@ def list_workout_sessions(current_user):
     workout_plans = WorkoutPlan.get_user_workout_plan(user_id=current_user.id)
     if not workout_plans:
         return jsonify({"message": "No workout plans found for the user."}), 200
-    elif not workout_plans.workout_sessions:
+
+    # Gather all sessions from all workout plans that have sessions
+    sessions = []
+    for plan in workout_plans:
+        if plan.workout_sessions:
+            sessions.extend(plan.workout_sessions)
+
+    if not sessions:
         return jsonify({"message": "No workout sessions found for the user."}), 200
 
     return jsonify(
@@ -31,7 +38,7 @@ def list_workout_sessions(current_user):
                 "workout_plan_id": ws.workout_plan_id,
                 "scheduled_at": ws.scheduled_at,
             }
-            for ws in workout_plans.workout_sessions
+            for ws in sessions
         ]
     ), 200
 

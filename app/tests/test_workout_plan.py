@@ -1,7 +1,7 @@
 import json
 
 from ..models import WorkoutPlan
-from .test_utils import create_jwt_token
+from .utils.test_utilities import create_jwt_token
 
 
 def auth_headers(token):
@@ -42,7 +42,19 @@ def test_get_workout_not_found(client, seed_data, app):
     assert "No workout plan with id 999" in response.get_json()["message"]
 
 
-def test_delete_workout(client, seed_data, app, session):
+def test_get_workout_plan_not_owned(client, seed_data, app):
+    user = seed_data["no_plan_user"]
+    plan = seed_data["workout_plan"]
+    token = create_jwt_token(user.id, app)
+
+    client.set_cookie(key="jwt_token", value=token, domain="localhost")
+    response = client.get(f"/api/workout-plans/{plan.id}")
+
+    assert response.status_code == 404
+    assert "No workout plan with id" in response.get_json().get("message", "")
+
+
+def test_delete_workout_owned(client, seed_data, app, session):
     user = seed_data["plan_user"]
     plan = seed_data["workout_plan"]
     token = create_jwt_token(user.id, app)
@@ -57,6 +69,18 @@ def test_delete_workout(client, seed_data, app, session):
         session.query(WorkoutPlan).filter_by(id=plan.id, user_id=user.id).one_or_none()
     )
     assert deleted_plan is None
+
+
+def test_delete_workout_plan_not_owned(client, seed_data, app):
+    user = seed_data["no_plan_user"]
+    plan = seed_data["workout_plan"]
+    token = create_jwt_token(user.id, app)
+
+    client.set_cookie(key="jwt_token", value=token, domain="localhost")
+    response = client.delete(f"/api/workout-plans/{plan.id}")
+
+    assert response.status_code == 404
+    assert "No workout plan with id" in response.get_json().get("message", "")
 
 
 def test_create_workout_plan(client, seed_data, app, session):
@@ -99,7 +123,7 @@ def test_create_workout_plan(client, seed_data, app, session):
     assert wp_ex.target_weight == 0
 
 
-def test_update_workout_plan(client, seed_data, app, session):
+def test_update_workout_plan_success(client, seed_data, app, session):
     user = seed_data["plan_user"]
     plan = seed_data["workout_plan"]
     exercises = seed_data["exercises"]
@@ -145,3 +169,32 @@ def test_update_workout_plan(client, seed_data, app, session):
     assert updated_ex.target_sets == 5
     assert updated_ex.target_reps == 8
     assert updated_ex.target_weight == 20.0
+
+
+def test_update_workout_plan_not_owned(client, seed_data, app):
+    user = seed_data["no_plan_user"]
+    plan = seed_data["workout_plan"]
+    exercises = seed_data["exercises"]
+    token = create_jwt_token(user.id, app)
+
+    payload = {
+        "name": "Unauthorized Update",
+        "exercises": [
+            {
+                "exercise_id": exercises[0].id,
+                "target_sets": 5,
+                "target_reps": 8,
+                "target_weight": 20.0,
+            }
+        ],
+    }
+
+    client.set_cookie(key="jwt_token", value=token, domain="localhost")
+    response = client.patch(
+        f"/api/workout-plans/{plan.id}",
+        data=json.dumps(payload),
+        content_type="application/json",
+    )
+
+    assert response.status_code == 404
+    assert "No workout plan with id" in response.get_json().get("message", "")

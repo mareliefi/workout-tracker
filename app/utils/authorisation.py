@@ -1,9 +1,9 @@
-# app/utils/authorisation.py
 from functools import wraps
 
 import jwt
-from ..models import User, db 
 from flask import current_app, jsonify, request
+
+from ..models import User, db
 
 
 def token_required(f):
