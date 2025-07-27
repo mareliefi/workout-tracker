@@ -30,12 +30,10 @@
 ### Workout Sessions
 * POST /v1/workout-session/{workout_plan_id} – Create a workout session (linking to a plan), create a session exercise entry for every workout plan exercise
 * GET /v1/workout-sessions – List workout sessions 
-* GET /v1/workout-sessions/{workout_plan_user_session_id} – Get a specific scheduled workout session 
-* PATCH /v1/workout-sessions/{workout_plan_user_session_id}/{workout_plan_exercise_id} – Update status of user workout session  
-* PATCH /v1/workout-session-exercise/{session_exercise_id} - Update actual_sets, actual_weight, actual_reps, notes in session exercises. 
-* DELETE /v1/workout-sessions/{workout_plan_user_session_id} – cascade delete a workout session and all session exercises.
+* GET /v1/workout-sessions/{workout_plan_id}/{workout_session_id} – Get a specific scheduled workout session 
+* PATCH /v1/workout-sessions/{workout_plan_id}/{workout_session_id} – Update status of user workout session  
+* DELETE /v1/workout-sessions/{workout_plan_id}/{workout_session_id} – cascade delete a workout session and all session exercises.
 
 ### Workout Reports
-* GET /v1/reports/workout-sessions - List workout sessions with session exercises
-* GET /v1/reports/workout-sessions/{session_exercise_id} – Report on user’s progress on a specific exercise
+* GET /v1/reports/{workout_plan_id} - Get workout plan exericses, sessions and session exercises report for a workout plan
 
