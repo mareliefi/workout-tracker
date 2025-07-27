@@ -30,11 +30,102 @@
 ### Workout Sessions
 * POST /v1/workout-session/{workout_plan_id} – Create a workout session (linking to a plan), create a session exercise entry for every workout plan exercise
 * GET /v1/workout-sessions – List workout sessions 
-* GET /v1/workout-sessions/{workout_plan_user_session_id} – Get a specific scheduled workout session 
-* PATCH /v1/workout-sessions/{workout_plan_user_session_id}/{workout_plan_exercise_id} – Update status of user workout session  
-* PATCH /v1/workout-session-exercise/{session_exercise_id} - Update actual_sets, actual_weight, actual_reps, notes in session exercises. 
-* DELETE /v1/workout-sessions/{workout_plan_user_session_id} – cascade delete a workout session and all session exercises.
+* GET /v1/workout-sessions/{workout_plan_id}/{workout_session_id} – Get a specific scheduled workout session 
+* PATCH /v1/workout-sessions/{workout_plan_id}/{workout_session_id} – Update status of user workout session  
+* DELETE /v1/workout-sessions/{workout_plan_id}/{workout_session_id} – cascade delete a workout session and all session exercises.
 
 ### Workout Reports
-* GET /v1/reports/workout-sessions - List workout sessions with session exercises
-* GET /v1/reports/workout-sessions/{session_exercise_id} – Report on user’s progress on a specific exercise
+* GET /v1/reports/{workout_plan_id} - Get workout plan exericses, sessions and session exercises report for a workout plan
+
+# Setting up Workout Tracker
+## 🏋️ Workout Tracker Flask App Setup Guide
+
+This guide will help you set up the Flask-based Workout Tracker app locally for development and testing.
+
+---
+
+## 📦 Prerequisites
+
+Make sure you have the following installed:
+
+- Python 3.8+ 
+- PostgreSQL
+- pip
+- virtualenv
+
+---
+
+## 🛠️ Setup Instructions
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/your-username/workout-tracker.git
+cd workout-tracker
+```
+
+### 2. Create and activate a virtual environment
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 3. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Create the .env file
+```bash
+# Flask
+FLASK_APP=app.py
+FLASK_ENV=development
+FLASK_DEBUG=1
+
+# Database (PostgreSQL)
+DB_USER=your_postgres_user
+DB_PASSWORD=your_postgres_password
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=workout_tracker
+
+# SQLAlchemy
+SQLALCHEMY_DATABASE_URI=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+SECRET_KEY=change_this_secret
+SQLALCHEMY_TEST_URI=postgresql://postgres:postgres@localhost:${DB_PORT}/workout_tracker_test
+SECRET_KEY_TEST=another_test_secret
+SQLALCHEMY_TRACK_MODIFICATIONS=False
+```
+⚠️ Replace your_postgres_user and your_postgres_password with your actual PostgreSQL credentials.
+
+### 5. Create the databases
+Make sure PostgreSQL is running, then create the required databases:
+```bash
+createdb workout_tracker
+createdb workout_tracker_test
+```
+
+Open `psql` as the `postgres` superuser:
+```bash
+psql -U postgres
+CREATE USER your_username WITH PASSWORD 'your_password';
+CREATE DATABASE workout_tracker OWNER your_username;
+CREATE DATABASE workout_tracker_test OWNER your_username;
+GRANT ALL PRIVILEGES ON DATABASE workout_tracker TO your_username;
+GRANT ALL PRIVILEGES ON DATABASE workout_tracker_test TO your_username;
+```
+
+### 6. Run database migrations
+```bash
+flask db upgrade
+```
+
+### 7. Run the Flask app
+```bash
+flask run
+```
+
+### 8. To Run tests
+```bash
+pytest
+```
