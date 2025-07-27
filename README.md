@@ -37,6 +37,7 @@
 ### Workout Reports
 * GET /v1/reports/{workout_plan_id} - Get workout plan exericses, sessions and session exercises report for a workout plan
 
+
 # Setting up Workout Tracker
 ## 🏋️ Workout Tracker Flask App Setup Guide
 
@@ -129,10 +130,3 @@ flask run
 ```bash
 pytest
 ```
-
-
-
-
-
-
-
