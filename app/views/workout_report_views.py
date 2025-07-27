@@ -36,9 +36,9 @@ def get_workout_report(current_user, workout_plan_id):
         return jsonify({"message": "Workout plan not found"}), 404
 
     return {
-        "id": workout_plan.id,
-        "name": workout_plan.name,
-        "exercises": [
+        "workout_plan_id": workout_plan.id,
+        "workout_plan_name": workout_plan.name,
+        "workout_plan_exercises": [
             {
                 "id": wp_ex.exercise_id,
                 "name": wp_ex.exercise.name if wp_ex.exercise else None,
@@ -48,9 +48,9 @@ def get_workout_report(current_user, workout_plan_id):
             }
             for wp_ex in workout_plan.workout_plan_exercises
         ],
-        "sessions": [
+        "workout_plan_sessions": [
             {
-                "id": session.id,
+                "session_id": session.id,
                 "scheduled_at": session.scheduled_at.isoformat()
                 if session.scheduled_at
                 else None,
@@ -60,7 +60,7 @@ def get_workout_report(current_user, workout_plan_id):
                 "completed_at": session.completed_at.isoformat()
                 if session.completed_at
                 else None,
-                "exercises": [
+                "session_exercises": [
                     {
                         "id": ws_ex.id,
                         "workout_plan_exercise_id": ws_ex.workout_plan_exercise_id,

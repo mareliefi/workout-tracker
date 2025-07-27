@@ -22,7 +22,6 @@ def list_workout_sessions(current_user):
     if not workout_plans:
         return jsonify({"message": "No workout plans found for the user."}), 200
 
-    # Gather all sessions from all workout plans that have sessions
     sessions = []
     for plan in workout_plans:
         if plan.workout_sessions:
@@ -132,63 +131,61 @@ def update_workout_session(current_user, workout_plan_id, workout_session_id):
             }
         ), 404
 
-    for field, type in [
+    # Validate datetime fields
+    for field, field_type in [
         ("scheduled_at", "datetime"),
         ("started_at", "datetime"),
         ("completed_at", "datetime"),
     ]:
-        error = validate_field(data, field, type)
+        error = validate_field(data, field, field_type)
         if error:
             errors[field] = error
     if errors:
         return {"status": "error", "errors": errors}, 400
 
+    # Update session timestamps
     workout_session.scheduled_at = data.get(
         "scheduled_at", workout_session.scheduled_at
     )
     workout_session.started_at = data.get("started_at", workout_session.started_at)
-    workout_session.completed_at = data.get("completed_at", workout_session.started_at)
+    workout_session.completed_at = data.get("completed_at", workout_session.completed_at)
 
-    # Update exercises if provided
     if "exercises" in data:
         existing_session_exercises = {
-            ws_ex.id: ws_ex for ws_ex in workout_session.session_exercises
+            ws_ex.workout_plan_exercise_id: ws_ex for ws_ex in workout_session.session_exercises
         }
 
         for exercise_data in data.get("exercises", []):
-            for field, type in [
+            for field, field_type in [
                 ("workout_plan_exercise_id", "int"),
                 ("actual_sets", "int"),
                 ("actual_reps", "int"),
                 ("actual_weight", "float"),
             ]:
-                error = validate_field(data, field, type)
+                error = validate_field(exercise_data, field, field_type) 
                 if error:
                     errors[field] = error
             if errors:
                 return {"status": "error", "errors": errors}, 400
 
-            workout_plan_exercise_id = exercise_data.get("workout_plan_exercise_id")
+            workout_plan_exercise_id = exercise_data.get("workout_plan_exercise_id")            
             exercise = WorkoutPlanExercise.get_by_workout_id_exercise_id(
                 id=workout_plan_exercise_id, workout_plan_id=workout_plan_id
             )
             if exercise is None:
                 return jsonify(
                     {
-                        "message": f"""Exercise with id {workout_plan_exercise_id} does not exist
-                        in workout plan. Add exercise to workout plan first."""
+                        "message": f"Exercise with id {workout_plan_exercise_id} does not exist in workout plan. Add exercise to workout plan first."
                     }
                 ), 400
 
-            if exercise in existing_session_exercises:
+            if workout_plan_exercise_id in existing_session_exercises:
                 # Exercise already exists → update it
-                ws_ex = existing_session_exercises[exercise]
+                ws_ex = existing_session_exercises[workout_plan_exercise_id]
                 ws_ex.actual_sets = exercise_data.get("actual_sets", ws_ex.actual_sets)
                 ws_ex.actual_reps = exercise_data.get("actual_reps", ws_ex.actual_reps)
-                ws_ex.actual_weight = exercise_data.get(
-                    "actual_weight", ws_ex.actual_weight
-                )
-                ws_ex.notes = ws_ex.get("notes", ws_ex.notes)
+                ws_ex.actual_weight = exercise_data.get("actual_weight", ws_ex.actual_weight)
+                ws_ex.notes = exercise_data.get("notes", ws_ex.notes)
             else:
                 # Exercise does not exist → create new one
                 new_ws_ex = SessionExercise(
@@ -199,15 +196,15 @@ def update_workout_session(current_user, workout_plan_id, workout_session_id):
                     actual_weight=exercise_data.get("actual_weight", 1.0),
                     notes=exercise_data.get("notes", ""),
                 )
-            try:
-                new_ws_ex.save()
-                workout_session.session_exercises.append(new_ws_ex)
-            except Exception as e:
-                return jsonify(
-                    {
-                        "message": f"An error occurred while processing the exercise: {str(e)}"
-                    }
-                ), 400
+                try:
+                    db.session.add(new_ws_ex)  
+                except Exception as e:
+                    return jsonify(
+                        {
+                            "message": f"An error occurred while processing the exercise: {str(e)}"
+                        }
+                    ), 400
+
     try:
         db.session.commit()
     except Exception as e:
@@ -308,4 +305,5 @@ def create_workout_session(current_user, workout_plan_id):
             {"message": f"An error occurred while saving the data: {str(e)}"}
         ), 500
 
-    return jsonify({"message": "Workout session updated successfully"}), 200
+    return jsonify({"message": "Workout session created successfully",
+                    "workout_session_id": workout_session.id}), 200

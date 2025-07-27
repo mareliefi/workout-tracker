@@ -98,15 +98,16 @@ def update_workout_plan(current_user, workout_plan_id):
         existing_exercises = {
             wp_ex.exercise_id: wp_ex for wp_ex in workout_plan.workout_plan_exercises
         }
-        new_exercises = data.get("exercises", [])
-        for exercise_data in new_exercises:
-            for field, type in [
+        
+        for exercise_data in data.get("exercises", []):
+            # Fix: Validate exercise_data instead of data
+            for field, field_type in [
                 ("exercise_id", "int"),
                 ("target_sets", "int"),
                 ("target_reps", "int"),
                 ("target_weight", "float"),
             ]:
-                error = validate_field(data, field, type)
+                error = validate_field(exercise_data, field, field_type)  # Changed from 'data' to 'exercise_data'
                 if error:
                     errors[field] = error
             if errors:
@@ -124,22 +125,23 @@ def update_workout_plan(current_user, workout_plan_id):
                 wp_ex = existing_exercises[exercise_id]
                 wp_ex.target_sets = exercise_data.get("target_sets", wp_ex.target_sets)
                 wp_ex.target_reps = exercise_data.get("target_reps", wp_ex.target_reps)
-                wp_ex.target_weight = exercise_data.get(
-                    "target_weight", wp_ex.target_weight
-                )
+                wp_ex.target_weight = exercise_data.get("target_weight", wp_ex.target_weight)
             else:
                 # Exercise does not exist → create new one
                 new_wp_ex = WorkoutPlanExercise(
+                    workout_plan_id=workout_plan_id, 
                     exercise_id=exercise_id,
                     target_sets=exercise_data.get("target_sets", 1),
                     target_reps=exercise_data.get("target_reps", 1),
                     target_weight=exercise_data.get("target_weight", 1.0),
                 )
-                workout_plan.workout_plan_exercises.append(new_wp_ex)
+                db.session.add(new_wp_ex)
+                
     try:
         db.session.commit()
-    except Exception:
-        return jsonify({"message": "An error occurred while saving the data."}), 500
+    except Exception as e:
+        db.session.rollback()  
+        return jsonify({"message": f"An error occurred while saving the data: {str(e)}"}), 500
 
     return jsonify({"message": "Workout plan updated successfully"}), 200
 
