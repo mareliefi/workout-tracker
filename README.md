@@ -121,12 +121,22 @@ GRANT ALL PRIVILEGES ON DATABASE workout_tracker_test TO your_username;
 flask db upgrade
 ```
 
-### 7. Run the Flask app
+### 7. Run script to generate exercise data
+```bash
+python scripts/adding_exercises.py
+```
+
+### 8. Run the Flask app
 ```bash
 flask run
 ```
 
-### 8. To Run tests
+### 9. To Run tests
+Run script:
+```bash
+python scripts/create_test_db.py
+```
+Then run tests:
 ```bash
 pytest
 ```
