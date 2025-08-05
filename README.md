@@ -110,8 +110,6 @@ Open `psql` as the `postgres` superuser:
 ```bash
 psql -U postgres
 CREATE USER your_username WITH PASSWORD 'your_password';
-CREATE DATABASE workout_tracker OWNER your_username;
-CREATE DATABASE workout_tracker_test OWNER your_username;
 GRANT ALL PRIVILEGES ON DATABASE workout_tracker TO your_username;
 GRANT ALL PRIVILEGES ON DATABASE workout_tracker_test TO your_username;
 ```
