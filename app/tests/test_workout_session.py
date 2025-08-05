@@ -133,7 +133,7 @@ def test_create_workout_session_valid(client, seed_data, app, session):
         url, data=json.dumps(payload), content_type="application/json"
     )
     assert response.status_code == 200
-    assert "Workout session updated successfully" in response.get_json()["message"]
+    assert "Workout session created successfully" in response.get_json()["message"]
 
     new_session = (
         session.query(WorkoutSession)
@@ -322,7 +322,7 @@ def test_create_workout_session_adds_session_exercises(client, seed_data, app, s
         url, data=json.dumps(payload), content_type="application/json"
     )
     assert response.status_code == 200
-    assert "Workout session updated successfully" in response.get_json()["message"]
+    assert "Workout session created successfully" in response.get_json()["message"]
 
     new_session = (
         session.query(WorkoutSession)
