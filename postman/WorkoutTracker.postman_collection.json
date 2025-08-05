@@ -1,0 +1,394 @@
+{
+	"info": {
+		"_postman_id": "e6563274-bee5-4d39-83db-4436f5c048dd",
+		"name": "WorkoutTracker",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "19693222"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Sign Up",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Janet\",\n    \"surname\": \"Doe\",\n    \"email\": \"janet.doe@example.com\",\n    \"password\": \"securepassword123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}/auth/signup"
+					},
+					"response": []
+				},
+				{
+					"name": "Log In",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extract token from cookie and save to environment",
+									"const cookies = pm.cookies.toObject();",
+									"if (cookies.jwt_token) {",
+									"    pm.environment.set(\"auth_token\", cookies.jwt_token);",
+									"    console.log(\"Token saved to environment variable\");",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"janet.doe@example.com\",\n    \"password\": \"securepassword123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}/auth/login"
+					},
+					"response": []
+				},
+				{
+					"name": "Log Out",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": "{{base_url}}/auth/logout"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Exercises",
+			"item": [
+				{
+					"name": "Get Exercises",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": "{{base_url}}/exercises"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Exercise",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": "{{base_url}}/exercises/1"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Workout Plan",
+			"item": [
+				{
+					"name": "Get Workout Plans",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": "{{base_url}}/workout-plans"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Workout Plan",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Check if workout plan creation was successful",
+									"if (pm.response.code === 200) {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    // Save the workout plan ID to environment variable",
+									"    if (responseData.workout_plan_id) {",
+									"        pm.environment.set(\"workout_plan_id\", responseData.workout_plan_id);",
+									"        console.log(\"✅ Workout Plan ID automatically saved:\", responseData.workout_plan_id);",
+									"        console.log(\"You can now use {{workout_plan_id}} in other requests\");",
+									"    } else {",
+									"        console.log(\"❌ No workout_plan_id found in response\");",
+									"        console.log(\"Response:\", responseData);",
+									"    }",
+									"} else {",
+									"    console.log(\"❌ Workout plan creation failed with status:\", pm.response.code);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Pump Day Workout\",\n    \"exercises\": [\n        {\n            \"exercise_id\": 1,\n            \"target_sets\": 7,\n            \"target_reps\": 5,\n            \"target_weight\": 30.0\n        },\n        {\n            \"exercise_id\": 2,\n            \"target_sets\": 8,\n            \"target_reps\": 16,\n            \"target_weight\": 20.0\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}/workout-plans"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Workout Plan",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": "{{base_url}}/workout-plans/{{workout_plan_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Workout Plan",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Push Day Workout\",\n    \"exercises\": [\n        {\n            \"exercise_id\": 1,\n            \"target_sets\": 4,\n            \"target_reps\": 12,\n            \"target_weight\": 55.0\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}/workout-plans/{{workout_plan_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Workout Plan",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": "{{base_url}}/workout-plans/{{workout_plan_id}}"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Workout Session",
+			"item": [
+				{
+					"name": "Get Workout Sessions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": "{{base_url}}/workout-sessions"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Workout Session",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Check if workout plan creation was successful",
+									"if (pm.response.code === 200) {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    // Save the workout plan ID to environment variable",
+									"    if (responseData.workout_session_id) {",
+									"        pm.environment.set(\"workout_session_id\", responseData.workout_session_id);",
+									"        console.log(\"✅ Workout Session ID automatically saved:\", responseData.workout_plan_id);",
+									"        console.log(\"You can now use {{workout_session_id}} in other requests\");",
+									"    } else {",
+									"        console.log(\"❌ No workout_session_id found in response\");",
+									"        console.log(\"Response:\", responseData);",
+									"    }",
+									"} else {",
+									"    console.log(\"❌ Workout session creation failed with status:\", pm.response.code);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"scheduled_at\": \"2025-01-20T10:00:00\",\n    \"started_at\": \"2025-01-20T10:05:00\",\n    \"completed_at\": \"2025-01-20T11:30:00\",\n    \"exercises\": [\n        {\n            \"workout_plan_exercise_id\": 1,\n            \"actual_sets\": 3,\n            \"actual_reps\": 10,\n            \"actual_weight\": 80.0,\n            \"notes\": \"Great session, felt strong\"\n        },\n        {\n            \"workout_plan_exercise_id\": 2,\n            \"actual_sets\": 4,\n            \"actual_reps\": 8,\n            \"actual_weight\": 60.0,\n            \"notes\": \"Form was good\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}/workout-sessions/{{workout_plan_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Workout Session",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": "{{base_url}}/workout-sessions/{{workout_plan_id}}/{{workout_session_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Workout Session",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"started_at\": \"2025-01-15T10:10:00\",\n    \"completed_at\": \"2025-01-15T11:45:00\",\n    \"exercises\": [\n        {\n            \"workout_plan_exercise_id\": 1,\n            \"actual_sets\": 4,\n            \"actual_reps\": 12,\n            \"actual_weight\": 85.0,\n            \"notes\": \"Increased weight successfully\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}/workout-sessions/{{workout_plan_id}}/{{workout_session_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Workout Session",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": "{{base_url}}/workout-sessions/{{workout_plan_id}}/{{workout_session_id}}"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Report",
+			"item": [
+				{
+					"name": "Get Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": "{{base_url}}/reports/workout-plan/{{workout_plan_id}}"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
