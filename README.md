@@ -139,7 +139,7 @@ Then run tests:
 pytest
 ```
 
-### To test on Postman
+### 10. To test on Postman
 1. Import the collection and environment json files from the postman folder in the app's main directory, into Postman.
 2. Run the app
 3. Then test the different requests in the collection. 
