@@ -12,22 +12,25 @@ def test_get_workout_report_success(client, seed_data, app):
     assert response.status_code == 200
 
     data = response.get_json()
-    assert data["id"] == workout_plan.id
-    assert data["name"] == workout_plan.name
-    assert isinstance(data["exercises"], list)
-    assert isinstance(data["sessions"], list)
+    assert data["workout_plan_id"] == workout_plan.id
+    assert data["workout_plan_name"] == workout_plan.name
+    assert isinstance(data["workout_plan_exercises"], list)
+    assert isinstance(data["workout_plan_sessions"], list)
 
-    ex_ids = [ex["id"] for ex in data["exercises"]]
+    ex_ids = [ex["id"] for ex in data["workout_plan_exercises"]]
     plan_ex_ids = [wp_ex.exercise_id for wp_ex in workout_plan.workout_plan_exercises]
     assert set(ex_ids) == set(plan_ex_ids)
 
-    for session in data["sessions"]:
-        assert "id" in session
+    for session in data["workout_plan_sessions"]:
+        assert "session_id" in session
         assert "scheduled_at" in session
         assert "started_at" in session
         assert "completed_at" in session
-        assert isinstance(session.get("exercises", []), list)
-        for ex in session.get("exercises", []):
+
+        exercises = session.get("session_exercises", [])
+        assert isinstance(exercises, list)
+
+        for ex in exercises:
             assert "id" in ex
             assert "workout_plan_exercise_id" in ex
             assert "exercise_name" in ex
@@ -35,6 +38,7 @@ def test_get_workout_report_success(client, seed_data, app):
             assert "actual_reps" in ex
             assert "actual_weight" in ex
             assert "notes" in ex
+
 
 
 def test_get_workout_report_not_found(client, seed_data, app):
