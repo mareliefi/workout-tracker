@@ -1,0 +1,21 @@
+{
+  "name": "workout-tracker",
+  "version": "1.0.0",
+  "description": "Full-stack workout tracker with Flask and React",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "flask run",
+    "client": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "install-all": "pip install -r requirements.txt && npm install && cd frontend && npm install",
+    "install-python": "pip install -r requirements.txt",
+    "install-frontend": "cd frontend && npm install",
+    "start": "npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "keywords": ["workout", "tracker", "flask", "react", "vite"],
+  "author": "Your Name",
+  "license": "MIT"
+}

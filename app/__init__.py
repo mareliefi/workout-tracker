@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask
 from flask_migrate import Migrate
+from flask_cors import CORS
 from .models import db
 from .views import api_bp
 
@@ -21,6 +22,11 @@ def create_app(config_class=None):
             os.getenv("SQLALCHEMY_TRACK_MODIFICATIONS", "False") == "True"
         )
         app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+
+    # Enable CORS
+    CORS(app, 
+         origins=['http://localhost:3000'],  # React dev server
+         supports_credentials=True)
 
     db.init_app(app)
     Migrate(app, db)
