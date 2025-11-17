@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: workout_tracker_db_dev
+    environment:
+      POSTGRES_USER: marli
+      POSTGRES_PASSWORD: kaaskrul6
+      POSTGRES_DB: workout_tracker
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+      - ./scripts/create_test_db.py:/scripts/create_test_db.py
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U marli -d workout_tracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - workout_network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: workout_tracker_backend_dev
+    environment:
+      FLASK_APP: app
+      FLASK_ENV: development
+      FLASK_DEBUG: 1
+      DB_USER: marli
+      DB_PASSWORD: kaaskrul6
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: workout_tracker
+      SQLALCHEMY_DATABASE_URI: postgresql://marli:kaaskrul6@db:5432/workout_tracker
+      SQLALCHEMY_TRACK_MODIFICATIONS: "False"
+    volumes:
+      - ./app:/app/app
+      - ./scripts:/app/scripts
+      - ./migrations:/app/migrations
+      - ./requirements.txt:/app/requirements.txt
+      - ./.env:/app/.env
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - workout_network
+
+  frontend:
+    image: node:20-alpine
+    container_name: workout_tracker_frontend_dev
+    working_dir: /app/frontend
+    volumes:
+      - ./frontend:/app/frontend
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - /app/frontend/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000
+      - CHOKIDAR_USEPOLLING=true
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    depends_on:
+      - backend
+    networks:
+      - workout_network
+
+volumes:
+  postgres_data_dev:
+
+networks:
+  workout_network:
+    driver: bridge
+
+
+
+
+

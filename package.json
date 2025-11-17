@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Full-stack workout tracker with Flask and React",
   "scripts": {
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "server": "flask run",
+    "dev": "concurrently \"npm:server\" \"npm:client\"",
+    "server": "cd app && flask run --host=0.0.0.0",
     "client": "cd frontend && npm run dev",
     "build": "cd frontend && npm run build",
     "install-all": "pip install -r requirements.txt && npm install && cd frontend && npm install",

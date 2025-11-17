@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: workout_tracker_db
+    environment:
+      POSTGRES_USER: ${DB_USER:-marli}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-kaaskrul6}
+      POSTGRES_DB: ${DB_NAME:-workout_tracker}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+      - ./scripts/create_test_db.py:/scripts/create_test_db.py
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-marli} -d ${DB_NAME:-workout_tracker}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - workout_network
+
+  # Flask Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: workout_tracker_backend
+    env_file: .env
+    volumes:
+      - ./app:/app/app
+      - ./scripts:/app/scripts
+      - ./migrations:/app/migrations
+      - ./.env:/app/.env
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - workout_network
+
+  # React Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: workout_tracker_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - workout_network
+
+volumes:
+  postgres_data:
+
+networks:
+  workout_network:
+    driver: bridge
+
+
+
