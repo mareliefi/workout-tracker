@@ -49,10 +49,8 @@ This guide will help you set up the Flask-based Workout Tracker app locally for 
 
 Make sure you have the following installed:
 
-- Python 3.8+ 
-- PostgreSQL
-- pip
-- virtualenv
+- Docker (20.10+)
+- Docker Compose (2.0+) 
 
 ---
 
@@ -65,71 +63,22 @@ git clone https://github.com/your-username/workout-tracker.git
 cd workout-tracker
 ```
 
-### 2. Create and activate a virtual environment
+### 4. Copy the .env file
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+cp .example-env .env 
 ```
 
-### 3. Install dependencies
+### 5. Make scripts executable
 ```bash
-pip install -r requirements.txt
+bashchmod +x setup.sh entrypoint.sh init-db.sh
 ```
 
-### 4. Create the .env file
+### 6. Run Setup Script
 ```bash
-# Flask
-FLASK_APP=app.py
-FLASK_ENV=development
-FLASK_DEBUG=1
-
-# Database (PostgreSQL)
-DB_USER=your_postgres_user
-DB_PASSWORD=your_postgres_password
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=workout_tracker
-
-# SQLAlchemy
-SQLALCHEMY_DATABASE_URI=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
-SECRET_KEY=change_this_secret
-SQLALCHEMY_TEST_URI=postgresql://postgres:postgres@localhost:${DB_PORT}/workout_tracker_test
-SECRET_KEY_TEST=another_test_secret
-SQLALCHEMY_TRACK_MODIFICATIONS=False
-```
-⚠️ Replace your_postgres_user and your_postgres_password with your actual PostgreSQL credentials.
-
-### 5. Create the databases
-Make sure PostgreSQL is running, then create the required databases:
-```bash
-createdb workout_tracker
-createdb workout_tracker_test
+./setup.sh
 ```
 
-Open `psql` as the `postgres` superuser:
-```bash
-psql -U postgres
-CREATE USER your_username WITH PASSWORD 'your_password';
-GRANT ALL PRIVILEGES ON DATABASE workout_tracker TO your_username;
-GRANT ALL PRIVILEGES ON DATABASE workout_tracker_test TO your_username;
-```
-
-### 6. Run database migrations
-```bash
-flask db upgrade
-```
-
-### 7. Run script to generate exercise data
-```bash
-python scripts/adding_exercises.py
-```
-
-### 8. Run the Flask app
-```bash
-flask run
-```
-
-### 9. To Run tests
+### 6. To Run tests
 Run script:
 ```bash
 python scripts/create_test_db.py
