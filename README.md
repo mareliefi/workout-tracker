@@ -81,10 +81,7 @@ bashchmod +x setup.sh entrypoint.sh init-db.sh
 ### 7. To Run tests
 Run script:
 ```bash
-python scripts/create_test_db.py
-```
-Then run tests:
-```bash
+docker compose exec backend bash
 pytest
 ```
 
