@@ -78,14 +78,24 @@ bashchmod +x setup.sh entrypoint.sh init-db.sh
 ./setup.sh
 ```
 
-### 7. To Run tests
+### 7. To Open App
+Backend API only:
+```bash
+http://localhost:5000
+```
+Frontend:
+```bash
+http://localhost:3000
+```
+
+### 8. To Run tests
 Run script:
 ```bash
 docker compose exec backend bash
 pytest
 ```
 
-### 8. To test on Postman
+### 9. To test on Postman
 1. Import the collection and environment json files from the postman folder in the app's main directory, into Postman.
 2. Run the app
 3. Then test the different requests in the collection. 
