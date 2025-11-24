@@ -26,11 +26,16 @@ const Login = () => {
     setError('');
     setLoading(true);
 
+    console.log('Attempting login with:', formData.email); // DEBUG
     const result = await login(formData.email, formData.password);
     
+    console.log('Login result:', result); // DEBUG
+    
     if (result.success) {
+      console.log('Login successful, navigating to dashboard'); // DEBUG
       navigate('/dashboard');
     } else {
+      console.log('Login failed:', result.message); // DEBUG
       setError(result.message);
     }
     

@@ -12,7 +12,6 @@ load_dotenv()
 def create_app(config_class=None):
     app = Flask(__name__)
     
-    # If a config_class is provided, use it, otherwise fall back to environment variables
     if config_class:
         app.config.from_object(config_class)
     else:
@@ -22,21 +21,23 @@ def create_app(config_class=None):
         )
         app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
     
-    # Enable CORS for both local development and Docker
+    # Enhanced CORS for both cookie and header-based auth
     CORS(app, 
          origins=[
-             'http://localhost:3000',      # Local React dev server
-             'http://frontend:3000',       # Docker frontend service (dev mode)
-             'http://127.0.0.1:3000',      # Alternative localhost
-             'http://localhost:80',        # Docker Nginx (production)
-             'http://frontend:80'          # Docker frontend service (production)
+             'http://localhost:3000',
+             'http://frontend:3000',
+             'http://127.0.0.1:3000',
+             'http://localhost:80',
+             'http://frontend:80'
          ],
-         supports_credentials=True)
+         supports_credentials=True,
+         allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
+         expose_headers=['Content-Type', 'Authorization', 'Set-Cookie'],
+         methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'])
     
     db.init_app(app)
     Migrate(app, db)
     
-    # Register the API blueprint with the prefix "/api"
     app.register_blueprint(api_bp, url_prefix="/api")
     
     @app.route("/")

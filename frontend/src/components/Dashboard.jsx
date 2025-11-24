@@ -1,4 +1,4 @@
-// frontend/src/components/Dashboard.js
+// frontend/src/components/Dashboard.jsx
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -24,7 +24,7 @@ const Dashboard = () => {
               </h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-gray-700">Welcome, {user?.email}</span>
+              <span className="text-gray-700">Welcome, {user?.name}</span>
               <button
                 onClick={handleLogout}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
@@ -51,7 +51,7 @@ const Dashboard = () => {
                 <div className="ml-5 w-0 flex-1">
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">
-                      Total Workouts
+                      Total Workout Sessions
                     </dt>
                     <dd className="text-lg font-medium text-gray-900">0</dd>
                   </dl>
@@ -71,7 +71,7 @@ const Dashboard = () => {
                 <div className="ml-5 w-0 flex-1">
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">
-                      Exercises
+                      Exercises done
                     </dt>
                     <dd className="text-lg font-medium text-gray-900">0</dd>
                   </dl>
@@ -108,17 +108,37 @@ const Dashboard = () => {
               Quick Actions
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                Start New Workout
+              <button 
+                onClick={() => navigate('/workout-plans/create')}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                Create Workout
               </button>
-              <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                View History
+              <button 
+                onClick={() => navigate('/workout-plans')}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >
+                View Workout Plans
               </button>
-              <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                Add Exercise
+              <button 
+                onClick={() => navigate('/workout-sessions/create')}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >
+                Start Workout Session
               </button>
-              <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                View Progress
+              <button 
+                onClick={() => navigate('/workout-sessions')}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >
+                View Workout Sessions
+              </button>
+              <button className="bg-green-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                View Progress Report
+              </button>
+              <button 
+                onClick={() => navigate('/exercises')}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >
+                Browse Exercises
               </button>
             </div>
           </div>
@@ -130,7 +150,7 @@ const Dashboard = () => {
             <h2 className="text-lg font-medium text-gray-900 mb-4">
               Recent Activity
             </h2>
-            <p className="text-gray-500">No workouts recorded yet.</p>
+            <p className="text-gray-500">No workout sessions recorded yet.</p>
           </div>
         </div>
       </main>

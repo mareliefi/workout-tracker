@@ -1,8 +1,6 @@
-// frontend/src/contexts/AuthContext.js
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authService } from '../services/authService';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -12,60 +10,117 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
+function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user data exists in localStorage
+    // Check if user is already logged in
+    const token = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    
+    if (token && savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      }
     }
     setLoading(false);
   }, []);
 
   const login = async (email, password) => {
-    setLoading(true);
-    const result = await authService.login(email, password);
-    
-    if (result.success) {
-      const userData = { email }; // You might want to fetch more user data
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-    }
-    
-    setLoading(false);
-    return result;
-  };
+    try {
+      
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      });
 
-  const register = async (userData) => {
-    setLoading(true);
-    const result = await authService.register(userData);
-    setLoading(false);
-    return result;
+      const data = await response.json();
+
+      if (response.ok) {
+        // Check if we have a token
+        if (data.token) {
+          
+          // Store token and user in localStorage
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          setUser(data.user);
+          
+          return { success: true };
+        } else {
+          return { success: false, message: 'No token received from server' };
+        }
+      } else {
+        return { success: false, message: data.message || 'Login failed' };
+      }
+    } catch (error) {
+      return { success: false, message: 'An error occurred during login' };
+    }
   };
 
   const logout = async () => {
-    setLoading(true);
-    await authService.logout();
-    setUser(null);
-    localStorage.removeItem('user');
-    setLoading(false);
+    try {
+      await fetch('http://localhost:5000/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+    }
+  };
+
+  const register = async (name, surname, email, password) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, surname, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        return { success: true, message: data.message };
+      } else {
+        return { success: false, message: data.message || 'Registration failed' };
+      }
+    } catch (error) {
+      return { success: false, message: 'An error occurred during registration' };
+    }
   };
 
   const value = {
     user,
     login,
-    register,
     logout,
+    register,
     loading,
-    isAuthenticated: !!user,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export default AuthProvider;
