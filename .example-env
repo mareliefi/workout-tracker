@@ -1,0 +1,20 @@
+# Flask
+FLASK_APP=app
+FLASK_ENV=development
+FLASK_DEBUG=1
+
+# Database
+DB_USER=marli
+DB_PASSWORD=kaaskrul6
+DB_NAME=workout_tracker
+DB_PORT=5432
+DB_HOST=db
+
+# SQLAlchemy - Use actual values, not ${variables}
+SQLALCHEMY_DATABASE_URI=postgresql://marli:kaaskrul6@db:5432/workout_tracker
+SQLALCHEMY_TEST_URI=postgresql://marli:kaaskrul6@db:5432/workout_tracker_test
+SECRET_KEY=kIfDV0HRAhn3MdwC78IlLFzG8AlrkJIN
+SECRET_KEY_TEST=1234
+SQLALCHEMY_TRACK_MODIFICATIONS=False
+
+
