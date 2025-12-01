@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import jsonify, request
 
 from ..models import (
@@ -50,6 +51,7 @@ def get_workout_session(current_user, workout_plan_id, workout_session_id):
     workout_session = WorkoutSession.get_session_for_user_plan(
         current_user.id, workout_plan_id, workout_session_id
     )
+
     if not workout_session:
         return jsonify(
             {
@@ -63,12 +65,13 @@ def get_workout_session(current_user, workout_plan_id, workout_session_id):
                 "workout_session": {
                     "workout_session_id": workout_session.id,
                     "workout_plan_id": workout_session.workout_plan_id,
-                    "scheduled_at": workout_session.scheduled_at,
-                    "started_at": workout_session.started_at,
-                    "completed_at": workout_session.completed_at,
+                    "scheduled_at": serialize_datetime(workout_session.scheduled_at),
+                    "started_at": serialize_datetime(workout_session.started_at),
+                    "completed_at": serialize_datetime(workout_session.completed_at),
                     "session_exercises": [
                         {
-                            "id": ws_ex.workout_plan_exercise_id,
+                            "workout_plan_exercise_id": ws_ex.workout_plan_exercise_id,
+                            "name": ws_ex.workout_plan_exercise.exercise.name if ws_ex.workout_plan_exercise else None,
                             "actual_sets": ws_ex.actual_sets,
                             "actual_reps": ws_ex.actual_reps,
                             "actual_weight": ws_ex.actual_weight,
@@ -144,11 +147,12 @@ def update_workout_session(current_user, workout_plan_id, workout_session_id):
         return {"status": "error", "errors": errors}, 400
 
     # Update session timestamps
-    workout_session.scheduled_at = data.get(
-        "scheduled_at", workout_session.scheduled_at
-    )
-    workout_session.started_at = data.get("started_at", workout_session.started_at)
-    workout_session.completed_at = data.get("completed_at", workout_session.completed_at)
+    if data.get("scheduled_at"):
+        workout_session.scheduled_at = datetime.fromisoformat(data["scheduled_at"])
+    if data.get("started_at"):
+        workout_session.started_at = datetime.fromisoformat(data["started_at"])
+    if data.get("completed_at"):
+        workout_session.completed_at = datetime.fromisoformat(data["completed_at"])
 
     if "exercises" in data:
         existing_session_exercises = {
@@ -168,8 +172,8 @@ def update_workout_session(current_user, workout_plan_id, workout_session_id):
             if errors:
                 return {"status": "error", "errors": errors}, 400
 
-            workout_plan_exercise_id = exercise_data.get("workout_plan_exercise_id")            
-            exercise = WorkoutPlanExercise.get_by_workout_id_exercise_id(
+            workout_plan_exercise_id = exercise_data.get("workout_plan_exercise_id")         
+            exercise = WorkoutPlanExercise.get_by_workout_id_self_id(
                 id=workout_plan_exercise_id, workout_plan_id=workout_plan_id
             )
             if exercise is None:
@@ -225,21 +229,13 @@ def create_workout_session(current_user, workout_plan_id):
     workout_plan = WorkoutPlan.get_user_workout_plan(
         user_id=current_user.id, workout_plan_id=workout_plan_id
     )
-
     if not workout_plan:
-        return jsonify(
-            {
-                "message": f"""No workout plan with id {workout_plan_id} for this user -
-                workout session cannot be created."""
-            }
-        ), 404
+        return jsonify({
+            "message": f"No workout plan with id {workout_plan_id} for this user - cannot create session."
+        }), 404
 
-    for field, type in [
-        ("scheduled_at", "datetime"),
-        ("started_at", "datetime"),
-        ("completed_at", "datetime"),
-    ]:
-        error = validate_field(data, field, type)
+    for field, type_ in [("scheduled_at", "datetime"), ("started_at", "datetime"), ("completed_at", "datetime")]:
+        error = validate_field(data, field, type_)
         if error:
             errors[field] = error
     if errors:
@@ -247,63 +243,56 @@ def create_workout_session(current_user, workout_plan_id):
 
     workout_session = WorkoutSession(
         workout_plan_id=workout_plan.id,
-        scheduled_at=data.get("scheduled_at"),
+        scheduled_at = data.get("scheduled_at") or datetime.utcnow(),
         started_at=data.get("started_at"),
         completed_at=data.get("completed_at"),
     )
-    workout_plan.workout_sessions.append(workout_session)
+    db.session.add(workout_session)
 
-    # Add exercises if provided
-    if "exercises" in data:
-        for exercise_data in data.get("exercises", []):
-            for field, type in [
-                ("workout_plan_exercise_id", "int"),
-                ("actual_sets", "int"),
-                ("actual_reps", "int"),
-                ("actual_weight", "float"),
-            ]:
-                error = validate_field(data, field, type)
-                if error:
-                    errors[field] = error
-            if errors:
-                return {"status": "error", "errors": errors}, 400
+    exercises_data = data.get("exercises", [])
+    for ex_data in exercises_data:
+        for field, type_ in [
+            ("workout_plan_exercise_id", "int"),
+            ("actual_sets", "int"),
+            ("actual_reps", "int"),
+            ("actual_weight", "float"),
+        ]:
+            error = validate_field(ex_data, field, type_)
+            if error:
+                errors[field] = error
+        if errors:
+            return {"status": "error", "errors": errors}, 400
 
-            workout_plan_exercise_id = exercise_data.get("workout_plan_exercise_id")
-            exercise = WorkoutPlanExercise.get_by_workout_id_exercise_id(
-                id=workout_plan_exercise_id, workout_plan_id=workout_plan_id
-            )
-            if exercise is None:
-                return jsonify(
-                    {
-                        "message": f"""Exercise with id {workout_plan_exercise_id} does not exist
-                        in workout plan. Add exercise to workout plan first."""
-                    }
-                ), 400
+        workout_plan_exercise_id = ex_data.get("workout_plan_exercise_id")
+        exercise = WorkoutPlanExercise.get_by_workout_id_exercise_id(
+            id=workout_plan_exercise_id, workout_plan_id=workout_plan_id
+        )
+        if not exercise:
+            return jsonify({
+                "message": f"Exercise with id {workout_plan_exercise_id} does not exist in this workout plan."
+            }), 400
 
-            new_ws_ex = SessionExercise(
-                workout_session_id=workout_session.id,
-                workout_plan_exercise_id=workout_plan_exercise_id,
-                actual_sets=exercise_data.get("actual_sets", 1),
-                actual_reps=exercise_data.get("actual_reps", 1),
-                actual_weight=exercise_data.get("actual_weight", 1.0),
-                notes=exercise_data.get("notes", ""),
-            )
-            try:
-                new_ws_ex.save()
-                workout_session.session_exercises.append(new_ws_ex)
-            except Exception as e:
-                return jsonify(
-                    {
-                        "message": f"An error occurred while processing the exercise: {str(e)}"
-                    }
-                ), 400
+        session_exercise = SessionExercise(
+            workout_plan_exercise_id=exercise.id,
+            actual_sets=ex_data.get("actual_sets", 1),
+            actual_reps=ex_data.get("actual_reps", 1),
+            actual_weight=ex_data.get("actual_weight", 1.0),
+            notes=ex_data.get("notes", ""),
+        )
+
+        workout_session.session_exercises.append(session_exercise)
+
     try:
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify(
-            {"message": f"An error occurred while saving the data: {str(e)}"}
-        ), 500
+        return jsonify({"message": f"An error occurred while saving the session: {str(e)}"}), 500
 
-    return jsonify({"message": "Workout session created successfully",
-                    "workout_session_id": workout_session.id}), 200
+    return jsonify({
+        "message": "Workout session created successfully",
+        "workout_session_id": workout_session.id
+    }), 200
+
+
+def serialize_datetime(dt):
+    return dt.isoformat() if dt else None

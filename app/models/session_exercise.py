@@ -32,35 +32,33 @@ class SessionExercise(db.Model):
         return f"<SessionExercise {self.id}>"
 
     def validate(self):
-        """Validates that the exercise and workout session belong to the same workout plan."""
-        from . import WorkoutPlanExercise, WorkoutSession
+        """
+        Validates that the exercise and workout session belong to the same workout plan.
+        Raises ValueError if validation fails.
+        """
+        from . import WorkoutPlanExercise
 
+        # Check the exercise exists
         workout_exercise = (
             db.session.query(WorkoutPlanExercise)
             .filter(WorkoutPlanExercise.id == self.workout_plan_exercise_id)
             .one_or_none()
         )
-        workout_session = (
-            db.session.query(WorkoutSession)
-            .filter(WorkoutSession.id == self.workout_session_id)
-            .one_or_none()
-        )
+        if not workout_exercise:
+            raise ValueError("Invalid workout exercise.")
 
-        if not workout_exercise or not workout_session:
-            raise ValueError("Invalid workout exercise or workout session.")
+        # Check the workout session exists
+        if not self.workout_session:
+            raise ValueError("Invalid workout session.")
 
-        if workout_exercise.workout_plan_id != workout_session.workout_plan_id:
-            raise ValueError(
-                "Exercise and session must belong to the same workout plan."
-            )
+        # Ensure they belong to the same workout plan
+        if workout_exercise.workout_plan_id != self.workout_session.workout_plan_id:
+            raise ValueError("Exercise and session must belong to the same workout plan.")
 
     def save(self):
-        """Saves the session exercise after validation."""
-        try:
-            self.validate()
-            db.session.add(self)
-            db.session.commit()
-
-        except Exception as e:
-            db.session.rollback()
-            raise e
+        """
+        Validates the session exercise.
+        Do not commit here; let the calling code commit all changes at once.
+        """
+        self.validate()
+        db.session.add(self)

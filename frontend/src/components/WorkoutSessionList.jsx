@@ -28,7 +28,22 @@ const WorkoutSessionList = () => {
       if (!res.ok) throw new Error('Failed to fetch workout sessions');
 
       const data = await res.json();
-      setSessions(Array.isArray(data) ? data : []);
+
+      // Normalize sessions to include completed_at and workout name
+      const normalized = Array.isArray(data)
+        ? data.map(ws => ({
+            id: ws.id,
+            workout_plan_id: ws.workout_plan_id,
+            scheduled_at: ws.scheduled_at,
+            started_at: ws.started_at,
+            completed_at: ws.completed_at,
+            workout: {
+              name: ws.workout_name || 'Workout'
+            }
+          }))
+        : [];
+
+      setSessions(normalized);
       setLoading(false);
     } catch (e) {
       setError(e.message);
@@ -36,33 +51,38 @@ const WorkoutSessionList = () => {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (session) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/workout-sessions/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include'
-      });
+      const res = await fetch(
+        `http://localhost:5000/api/workout-sessions/${session.workout_plan_id}/${session.id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        }
+      );
 
       if (!res.ok) throw new Error('Failed to delete workout session');
 
-      setSessions(sessions.filter(session => session.id !== id));
+      setSessions(sessions.filter(s => s.id !== session.id));
       setDeleteConfirm(null);
     } catch (e) {
       setError(e.message);
     }
   };
 
-  const formatDate = (dateString) =>
-    new Date(dateString).toLocaleDateString('en-US', {
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
     });
+  };
 
   if (loading) {
     return (
@@ -105,9 +125,7 @@ const WorkoutSessionList = () => {
               >
                 ← Back to Dashboard
               </button>
-              <h1 className="text-xl font-semibold text-gray-900">
-                My Workout Sessions
-              </h1>
+              <h1 className="text-xl font-semibold text-gray-900">My Workout Sessions</h1>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-gray-700">{user?.name}</span>
@@ -118,7 +136,6 @@ const WorkoutSessionList = () => {
 
       {/* Main content */}
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-
         {/* Header */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Completed Sessions</h2>
@@ -148,18 +165,20 @@ const WorkoutSessionList = () => {
                   </h3>
                 </div>
                 <div className="text-sm text-gray-500 mb-4">
-                  Completed {formatDate(session.completed_at)}
+                  {session.completed_at
+                    ? `Completed ${formatDate(session.completed_at)}`
+                    : 'Not completed yet'}
                 </div>
 
                 <div className="flex space-x-2">
                   <button
-                    onClick={() => navigate(`/workout-sessions/${session.id}`)}
+                    onClick={() => navigate(`/workout-sessions/${session.workout_plan_id}/${session.id}`)}
                     className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
                   >
                     View Details
                   </button>
                   <button
-                    onClick={() => setDeleteConfirm(session.id)}
+                    onClick={() => setDeleteConfirm(session)}
                     className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
                   >
                     Delete

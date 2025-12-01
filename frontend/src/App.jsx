@@ -12,6 +12,7 @@ import WorkoutPlanDetail from './components/WorkoutPlanDetail';
 import WorkoutPlanForm from './components/WorkoutPlanForm';
 import WorkoutSessionList from './components/WorkoutSessionList';
 import WorkoutSessionDetail from './components/WorkoutSessionDetail';
+import WorkoutSessionEdit from './components/WorkoutSessionEdit';
 import WorkoutSessionForm from './components/WorkoutSessionForm';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -20,9 +21,11 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
+          {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          
+
+          {/* Dashboard */}
           <Route
             path="/dashboard"
             element={
@@ -31,7 +34,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+
           {/* Exercise Routes */}
           <Route
             path="/exercises"
@@ -49,7 +52,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+
           {/* Workout Plan Routes */}
           <Route
             path="/workout-plans"
@@ -102,7 +105,7 @@ function App() {
             }
           />
           <Route
-            path="/workout-sessions/:id"
+            path="/workout-sessions/:workout_plan_id/:workout_session_id"
             element={
               <ProtectedRoute>
                 <WorkoutSessionDetail />
@@ -110,14 +113,15 @@ function App() {
             }
           />
           <Route
-            path="/workout-sessions/:id/edit"
+            path="/workout-sessions/:workout_plan_id/:workout_session_id/edit"
             element={
               <ProtectedRoute>
-                <WorkoutSessionForm />
+                <WorkoutSessionEdit />
               </ProtectedRoute>
             }
           />
-          
+
+          {/* Default Route */}
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
@@ -126,3 +130,4 @@ function App() {
 }
 
 export default App;
+

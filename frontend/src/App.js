@@ -10,6 +10,10 @@ import ExerciseDetail from './components/ExerciseDetail';
 import WorkoutPlanList from './components/WorkoutPlanList';
 import WorkoutPlanDetail from './components/WorkoutPlanDetail';
 import WorkoutPlanForm from './components/WorkoutPlanForm';
+import WorkoutSessionList from './components/WorkoutSessionList';
+import WorkoutSessionDetail from './components/WorkoutSessionDetail';
+import WorkoutSessionEdit from './components/WorkoutSessionEdit';
+import WorkoutSessionForm from './components/WorkoutSessionForm';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -17,9 +21,11 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
+          {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          
+
+          {/* Dashboard */}
           <Route
             path="/dashboard"
             element={
@@ -28,7 +34,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+
           {/* Exercise Routes */}
           <Route
             path="/exercises"
@@ -46,7 +52,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+
           {/* Workout Plan Routes */}
           <Route
             path="/workout-plans"
@@ -80,7 +86,42 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+
+          {/* Workout Session Routes */}
+          <Route
+            path="/workout-sessions"
+            element={
+              <ProtectedRoute>
+                <WorkoutSessionList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workout-sessions/create"
+            element={
+              <ProtectedRoute>
+                <WorkoutSessionForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workout-sessions/:workout_plan_id/:workout_session_id"
+            element={
+              <ProtectedRoute>
+                <WorkoutSessionDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workout-sessions/:workout_plan_id/:workout_session_id/edit"
+            element={
+              <ProtectedRoute>
+                <WorkoutSessionEdit />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Default Route */}
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>

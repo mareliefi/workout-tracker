@@ -57,14 +57,13 @@ while ! pg_isready -h "${DB_HOST:-db}" -p "${DB_PORT:-5432}" -U "${DB_USER:-work
 done
 echo -e "${GREEN}✅ Database is ready${NC}"
 
-# ---- Run test DB setup if script exists ----
-if [ -f ./scripts/create_test_db.py ]; then
-    echo -e "${YELLOW}🧪 Running test DB setup script...${NC}"
-    python ./scripts/create_test_db.py || echo -e "${YELLOW}⚠️  Test DB setup failed (continuing anyway)${NC}"
-    echo -e "${GREEN}✅ Test database setup complete${NC}"
-else
-    echo -e "${YELLOW}ℹ️  Test DB script not found, skipping.${NC}"
-fi
+# Drop and recreate DB
+echo -e "${YELLOW}🗑 Dropping and recreating database '${DB_NAME}'...${NC}"
+PGPASSWORD="${DB_PASSWORD}" psql -h "${DB_HOST}" -U "${DB_USER}" -p "${DB_PORT}" -d postgres <<EOSQL
+DROP DATABASE IF EXISTS ${DB_NAME};
+CREATE DATABASE ${DB_NAME};
+EOSQL
+echo -e "${GREEN}✅ Database '${DB_NAME}' recreated${NC}"
 
 # Run migrations
 echo -e "${YELLOW}🔄 Running database migrations...${NC}"
