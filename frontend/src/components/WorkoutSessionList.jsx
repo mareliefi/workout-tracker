@@ -17,7 +17,7 @@ const WorkoutSessionList = () => {
   const fetchSessions = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/workout-sessions', {
+      const response = await fetch('http://localhost:5000/api/workout-sessions', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -25,28 +25,21 @@ const WorkoutSessionList = () => {
         credentials: 'include'
       });
 
-      if (!res.ok) throw new Error('Failed to fetch workout sessions');
+      if (!response.ok) {
+        throw new Error('Failed to fetch workout sessions');
+      }
 
-      const data = await res.json();
-
-      // Normalize sessions to include completed_at and workout name
-      const normalized = Array.isArray(data)
-        ? data.map(ws => ({
-            id: ws.id,
-            workout_plan_id: ws.workout_plan_id,
-            scheduled_at: ws.scheduled_at,
-            started_at: ws.started_at,
-            completed_at: ws.completed_at,
-            workout: {
-              name: ws.workout_name || 'Workout'
-            }
-          }))
-        : [];
-
-      setSessions(normalized);
+      const data = await response.json();
+      
+      // Handle the case where message is returned instead of array
+      if (data.message) {
+        setSessions([]);
+      } else {
+        setSessions(Array.isArray(data) ? data : []);
+      }
       setLoading(false);
-    } catch (e) {
-      setError(e.message);
+    } catch (err) {
+      setError(err.message);
       setLoading(false);
     }
   };
@@ -161,13 +154,26 @@ const WorkoutSessionList = () => {
               <div key={session.id} className="bg-white shadow rounded-lg p-6 hover:shadow-lg transition-shadow">
                 <div className="mb-3">
                   <h3 className="text-xl font-semibold text-gray-900">
-                    {session.workout?.name || 'Workout'}
+                    {session.workout_name || 'Workout'}
                   </h3>
                 </div>
-                <div className="text-sm text-gray-500 mb-4">
-                  {session.completed_at
-                    ? `Completed ${formatDate(session.completed_at)}`
-                    : 'Not completed yet'}
+                
+                <div className="text-sm text-gray-600 space-y-1 mb-4">
+                  <p>📅 Scheduled: {formatDate(session.scheduled_at)}</p>
+                  {session.started_at && (
+                    <p>▶️ Started: {formatDate(session.started_at)}</p>
+                  )}
+                  {session.completed_at && (
+                    <p className="text-green-600 font-medium">
+                      ✅ Completed: {formatDate(session.completed_at)}
+                    </p>
+                  )}
+                  {!session.completed_at && session.started_at && (
+                    <p className="text-yellow-600 font-medium">⏳ In Progress</p>
+                  )}
+                  {!session.started_at && (
+                    <p className="text-gray-500">📋 Not started</p>
+                  )}
                 </div>
 
                 <div className="flex space-x-2">
@@ -176,6 +182,12 @@ const WorkoutSessionList = () => {
                     className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
                   >
                     View Details
+                  </button>
+                  <button
+                    onClick={() => navigate(`/workout-sessions/${session.workout_plan_id}/${session.id}/edit`)}
+                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                  >
+                    Edit
                   </button>
                   <button
                     onClick={() => setDeleteConfirm(session)}

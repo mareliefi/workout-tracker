@@ -170,16 +170,20 @@ const WorkoutSessionDetail = () => {
               >
                 Back to List
               </button>
-              <button
-                onClick={() =>
-                  navigate(
-                    `/workout-sessions/${session.workout_plan_id}/${session.workout_session_id}/edit`
-                  )
-                }
-                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-md font-medium transition-colors"
-              >
-                Edit Session
-              </button>
+
+              {/* Show Edit button only if NOT completed */}
+              {!session.completed_at && (
+                <button
+                  onClick={() =>
+                    navigate(
+                      `/workout-sessions/${session.workout_plan_id}/${session.workout_session_id}/edit`
+                    )
+                  }
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-md font-medium transition-colors"
+                >
+                  Edit Session
+                </button>
+              )}
             </div>
           </div>
         </div>

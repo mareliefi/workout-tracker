@@ -15,7 +15,16 @@
   "devDependencies": {
     "concurrently": "^8.2.0"
   },
-  "keywords": ["workout", "tracker", "flask", "react", "vite"],
+  "keywords": [
+    "workout",
+    "tracker",
+    "flask",
+    "react",
+    "vite"
+  ],
   "author": "Your Name",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "recharts": "^3.5.1"
+  }
 }

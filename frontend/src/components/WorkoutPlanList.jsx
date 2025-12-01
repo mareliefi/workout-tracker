@@ -158,38 +158,43 @@ const WorkoutPlanList = () => {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
             {workoutPlans.map(plan => (
               <div
                 key={plan.id}
                 className="bg-white shadow rounded-lg p-6 hover:shadow-lg transition-shadow"
               >
                 <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    {plan.name}
-                  </h3>
+                  <h3 className="text-xl font-semibold text-gray-900">{plan.name}</h3>
                 </div>
-                
+
                 <div className="text-sm text-gray-500 mb-4">
                   Created {formatDate(plan.created_at)}
                 </div>
 
-                <div className="flex space-x-2">
+                {/* Button grid */}
+                <div className="grid grid-cols-2 md:grid-cols-2 gap-2">
                   <button
                     onClick={() => navigate(`/workout-plans/${plan.id}`)}
-                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
                   >
                     View Details
                   </button>
                   <button
                     onClick={() => navigate(`/workout-plans/${plan.id}/edit`)}
-                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                    className="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
                   >
                     Edit
                   </button>
                   <button
+                    onClick={() => navigate(`/reports/workout-plan/${plan.id}`)}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                  >
+                    View Progress Report
+                  </button>
+                  <button
                     onClick={() => setDeleteConfirm(plan.id)}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                    className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
                   >
                     Delete
                   </button>

@@ -36,7 +36,10 @@ def list_workout_sessions(current_user):
             {
                 "id": ws.id,
                 "workout_plan_id": ws.workout_plan_id,
-                "scheduled_at": ws.scheduled_at,
+                "workout_name": ws.workout_plan.name if ws.workout_plan else "Unknown Workout",
+                "scheduled_at": serialize_datetime(ws.scheduled_at),
+                "started_at": serialize_datetime(ws.started_at),
+                "completed_at": serialize_datetime(ws.completed_at),
             }
             for ws in sessions
         ]

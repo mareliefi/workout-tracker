@@ -14,6 +14,7 @@ import WorkoutSessionList from './components/WorkoutSessionList';
 import WorkoutSessionDetail from './components/WorkoutSessionDetail';
 import WorkoutSessionEdit from './components/WorkoutSessionEdit';
 import WorkoutSessionForm from './components/WorkoutSessionForm';
+import WorkoutReport from './components/WorkoutReport';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -120,6 +121,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+	  <Route
+	    path="/reports/workout-plan/:workout_plan_id"
+	    element={
+	      <ProtectedRoute>
+	        <WorkoutReport />
+	      </ProtectedRoute>
+	    }
+	  />
 
           {/* Default Route */}
           <Route path="/" element={<Navigate to="/login" replace />} />
