@@ -154,8 +154,11 @@ const WorkoutSessionList = () => {
               <div key={session.id} className="bg-white shadow rounded-lg p-6 hover:shadow-lg transition-shadow">
                 <div className="mb-3">
                   <h3 className="text-xl font-semibold text-gray-900">
-                    {session.workout_name || 'Workout'}
+                    {'Workout Plan: ' + session.workout_name}
                   </h3>
+                  <h2>
+                    {'Session #' + session.id}
+                  </h2>
                 </div>
                 
                 <div className="text-sm text-gray-600 space-y-1 mb-4">

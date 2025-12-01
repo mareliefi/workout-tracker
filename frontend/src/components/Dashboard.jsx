@@ -198,7 +198,7 @@ const Dashboard = () => {
                   >
                     <div>
                       <p className="font-medium text-gray-900">
-                        {session.workout_name || 'Workout'}
+                        {session.workout_name + ' Session #' + session.id}
                       </p>
                       <p className="text-sm text-gray-500">
                         {session.completed_at
