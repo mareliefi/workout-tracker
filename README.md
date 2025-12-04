@@ -59,7 +59,7 @@ Make sure you have the following installed:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/workout-tracker.git
+git clone git@github.com:mareliefi/workout-tracker.git
 cd workout-tracker
 ```
 
