@@ -33,27 +33,10 @@ else
     COMPOSE_CMD="docker compose"
 fi
 
-# Ask user for mode
-echo -e "${YELLOW}Select mode:${NC}"
-echo "  1) Production"
-echo "  2) Development"
-read -p "Enter choice [1-2]: " choice
+echo -e "${BLUE}🛠️  Starting Development...${NC}"
+$COMPOSE_CMD -f docker-compose.dev.yml up --build
 
-case $choice in
-    1)
-        echo -e "${BLUE}🚀 Starting Production...${NC}"
-        $COMPOSE_CMD up --build
-        ;;
-    2)
-        echo -e "${BLUE}🛠️  Starting Development...${NC}"
-        $COMPOSE_CMD -f docker-compose.dev.yml up --build
-        echo -e "${GREEN}✅ Dev environment is running!${NC}"
-        echo "🌐 Open frontend at: http://localhost:3000"
-        echo "🖥️  Backend API at: http://localhost:5000"
-        ;;
-    *)
-        echo -e "${RED}Invalid choice. Defaulting to Production...${NC}"
-        $COMPOSE_CMD up --build
-        ;;
-esac
+echo -e "${GREEN}✅ Dev environment is running!${NC}"
+echo "🌐 Open frontend at: http://localhost:3000"
+echo "🖥️  Backend API at: http://localhost:5000"
 
